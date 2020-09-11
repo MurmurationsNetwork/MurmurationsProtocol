@@ -1,0 +1,9 @@
+# Roadmap
+
+- Further design and document the Murmurations Protocol
+    - Define the library structure
+    - Define JSON Schema validation of fields and schemas
+    - Define REST API for Library and Index services
+- Build Index service
+- Build Library service
+- Build Node UI
