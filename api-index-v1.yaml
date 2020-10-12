@@ -1,0 +1,296 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: Murmurations Index API
+  description: Draft version of the Index API for the Murmurations Protocol
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/MurmurationsNetwork/IndexAPI/1.0
+tags:
+  - name: Node Endpoints
+  - name: Aggregator Endpoints
+paths:
+  /nodes:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Add a node to the index
+      description: |
+        A node adds its profile to the index by posting the location of the profile (`profileUrl`) and a list of one or more schemas (`linkedSchemas`) against which the profile must be validated.
+        
+        Each `linkedSchemas` item is a hash of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schemaHash}.json`. For example:
+        
+        `https://library.site/schemas/455521A0...18533249.json`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostNodeRequest'
+            example:
+              value:
+                profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                linkedSchemas:
+                  - "455521A0657FB351689770EF3F51240C404A32F8B4026A42F056CB6A18533249"
+                  - "0A4E773A1FC70FD577166C03B514A9D2BD87A9EC4FA054BE05D89C2116ADFD58"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PostNodeResponse'
+              example:
+                data:
+                  nodeId: "59776CA5CAF24DB9669D847BBA3A13BD7052DA0A8CCCD548A335D8C88D186CE3"
+                  lastValidated: 1601979232403
+        # TODO: Add non-generic error responses (e.g., `Failed validation with schema: {schemaId}`, `Profile not found at profileUrl`, etc.)
+        400:
+          $ref: '#/components/responses/BadRequest'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+        500: 
+          $ref: '#/components/responses/ServerError'
+    get:
+      tags:
+        - Aggregator Endpoints
+      summary: Search for nodes
+      description: |
+        Aggregators must authenticate themselves with a JWT to access this endpoint.
+        
+        Aggregators can search for nodes based on any of the following parameters:
+        
+        - A specific schema (`schemaId`)
+        - When the node was last checked by the index (`lastValidated`)
+        - A radius range (in kilometers) from a specific location (e.g., _"25km from my current location"_)
+      parameters:
+        - $ref: '#/components/parameters/schemaId'
+        - $ref: '#/components/parameters/lastValidated'
+        - $ref: '#/components/parameters/latitude'
+        - $ref: '#/components/parameters/longitude'
+        - $ref: '#/components/parameters/radius'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/GetNodesResponse'
+              example:
+                data:
+                  - profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                    lastValidated: 1601979232403
+                    geolocation:
+                      latitude: 23.568456
+                      longitude: -123.483721
+        # TODO: Add non-generic error responses (e.g., `SchemaId does not exist`, `Invalid latitude (must be number): {latitude}`, etc.)
+        400:
+          $ref: '#/components/responses/BadRequest'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+        500: 
+          $ref: '#/components/responses/ServerError'
+      security:
+        - jwt: []
+  /nodes/{nodeId}:
+    delete:
+      tags:
+        - Node Endpoints
+      summary: Delete a node from the index
+      description: |
+        A node can delete its profile from the index at any time simply by removing the profile from its `profileUrl` on its website and then sending this DELETE request to the index.
+        
+        The index will first confirm the profile is no longer available at the `profileUrl` (node's website should return a `404 - Not Found` error) and then remove the profile from its records. 
+      parameters:
+        - $ref: '#/components/parameters/nodeId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DeleteNodeResponse'
+              example:
+                data:
+                  message: "Removed from index: https://node.site/optional-subdirectory/node-profile.json"
+        # TODO: Add non-generic error responses (e.g., `NodeId does not exist`, `Profile not yet removed from node`, etc.)
+        400:
+          $ref: '#/components/responses/BadRequest'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+        500: 
+          $ref: '#/components/responses/ServerError'
+ 
+components:
+  schemas:
+    PostNodeRequest:
+      type: object
+      required:
+        - profileUrl
+        - linkedSchemas
+      properties:
+        profileUrl:
+          type: string
+        linkedSchemas:
+          type: array
+          items:
+            type: string
+    PostNodeResponse:
+      type: object
+      properties:
+        nodeId:
+          type: string
+        lastValidated:
+          type: number
+    DeleteNodeResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    GetNodesResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          profileUrl:
+            type: string
+          lastValidated:
+            type: number
+          geolocation:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+    Error:
+      type: object
+      title: Error
+      properties:
+        message:
+          type: string
+  parameters:
+    nodeId:
+      name: nodeId
+      in: path
+      description: The ID of the node
+      required: true
+      schema:
+        type: string
+    schemaId:
+      name: id
+      in: query
+      description: The ID of the schema
+      required: false
+      schema:
+        type: string
+    lastValidated:
+      name: validated
+      in: query
+      description: Unix timestamp when node was last validated by index
+      schema:
+        type: string
+    latitude:
+      name: lat
+      in: query
+      description: geolocation latitude coordinate
+      schema:
+        type: string
+    longitude:
+      name: long
+      in: query
+      description: geolocation longitude coordinate
+      schema:
+        type: string
+    radius:
+      name: radius
+      in: query
+      description: distance in kilometers from geolocation coordinates
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: The request is missing a required parameter.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - message: <named> parameter is missing.
+    Unauthorized:
+      description: There was an issue with the authentication data for the request.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - message: Could not authenticate you.
+    Forbidden:
+      description: User does not have permission to access the resource.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - message: Permission denied.
+    TooManyRequests:
+      description: The request limit for this resource has been reached for the current rate limit window.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - message: Rate limit exceeded.
+    ServerError:
+      description: An unknown internal error occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Error'
+          example:
+            errors:
+              - message: Internal server error triggered.
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
