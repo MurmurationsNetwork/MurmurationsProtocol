@@ -93,6 +93,10 @@ paths:
         # TODO: Add non-generic error responses (e.g., `SchemaId does not exist`, `Invalid latitude (must be number): {latitude}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
         429:
           $ref: '#/components/responses/TooManyRequests'
         500: 
