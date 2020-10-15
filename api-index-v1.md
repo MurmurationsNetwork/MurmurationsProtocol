@@ -33,14 +33,14 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 
 - Profile that validates to a referenced schema (or list of schemas), available at a publicly accessible URL
     - The profile must be available at the `profileUrl` or it will not be recorded by the index
-- One or more `schemaId`s (hashes of schemas) against which the profile must be validated
+- One or more `schemaName`s (unique schema name within a namespace) against which the profile must be validated
 
 ```json
 {
   "profileUrl": "https://node.site/optional-subdirectory/my-profile.json",
   "linkedSchemas": [
-    "455521A0657FB351689770EF3F51240C404A32F8B4026A42F056CB6A18533249",
-    "0A4E773A1FC70FD577166C03B514A9D2BD87A9EC4FA054BE05D89C2116ADFD58"
+    "demo_schema-v1",
+    "some_other_schema-v1"
   ]
 }
 ```
@@ -59,7 +59,7 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 TODO: Add example
 
 ##### Error
-- Error reason (e.g., `Failed validation with schema: {schemaId}`, `Profile not found at profileUrl`, etc.)
+- Error reason (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
 
 > :construction: INDEX SYNCING
 >
@@ -100,7 +100,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 
 #### Input
 
-- `schemaId` - hash of schema (only allow a single value per search)
+- `schemaName` - unique schema name (only allow a single value per search)
 - `lastValidated` - Unix timestamp (in milliseconds)
 - `geolocation` - `latitude`, `longitude` & `range`
 

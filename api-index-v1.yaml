@@ -48,7 +48,7 @@ paths:
                 data:
                   nodeId: "59776CA5CAF24DB9669D847BBA3A13BD7052DA0A8CCCD548A335D8C88D186CE3"
                   lastValidated: 1601979232403
-        # TODO: Add non-generic error responses (e.g., `Failed validation with schema: {schemaId}`, `Profile not found at profileUrl`, etc.)
+        # TODO: Add non-generic error responses (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
         429:
@@ -64,11 +64,11 @@ paths:
         
         Aggregators can search for nodes based on any of the following parameters:
         
-        - A specific schema (`schemaId`)
+        - A specific schema (`schemaName`)
         - When the node was last checked by the index (`lastValidated`)
         - A radius range (in kilometers) from a specific location (e.g., _"25km from my current location"_)
       parameters:
-        - $ref: '#/components/parameters/schemaId'
+        - $ref: '#/components/parameters/schemaName'
         - $ref: '#/components/parameters/lastValidated'
         - $ref: '#/components/parameters/latitude'
         - $ref: '#/components/parameters/longitude'
@@ -90,7 +90,7 @@ paths:
                     geolocation:
                       latitude: 23.568456
                       longitude: -123.483721
-        # TODO: Add non-generic error responses (e.g., `SchemaId does not exist`, `Invalid latitude (must be number): {latitude}`, etc.)
+        # TODO: Add non-generic error responses (e.g., `schemaName does not exist: {schemaName}`, `Invalid latitude (must be number): {latitude}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
         401:
@@ -191,10 +191,10 @@ components:
       required: true
       schema:
         type: string
-    schemaId:
-      name: id
+    schemaName:
+      name: schema
       in: query
-      description: The ID of the schema
+      description: The name of the schema
       required: false
       schema:
         type: string
