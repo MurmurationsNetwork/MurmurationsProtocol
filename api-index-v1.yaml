@@ -73,6 +73,9 @@ paths:
         - $ref: '#/components/parameters/latitude'
         - $ref: '#/components/parameters/longitude'
         - $ref: '#/components/parameters/radius'
+        - $ref: '#/components/parameters/locality'
+        - $ref: '#/components/parameters/region'
+        - $ref: '#/components/parameters/country'
       responses:
         200:
           description: OK
@@ -88,8 +91,12 @@ paths:
                   - profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
                     lastValidated: 1601979232403
                     geolocation:
-                      latitude: 23.568456
-                      longitude: -123.483721
+                      latitude: 51.509865
+                      longitude: -0.118092
+                    mapAddress:
+                      locality: London
+                      region: Greater London
+                      country: United Kingdom
         # TODO: Add non-generic error responses (e.g., `schemaName does not exist: {schemaName}`, `Invalid latitude (must be number): {latitude}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
@@ -177,6 +184,15 @@ components:
                 type: number
               longitude:
                 type: number
+          mapAddress:
+            type: object
+            properties:
+              locality:
+                type: string
+              region:
+                type: string
+              country:
+                type: string
     Error:
       type: object
       title: Error
@@ -205,13 +221,13 @@ components:
       schema:
         type: string
     latitude:
-      name: lat
+      name: latitude
       in: query
       description: geolocation latitude coordinate
       schema:
         type: string
     longitude:
-      name: long
+      name: longitude
       in: query
       description: geolocation longitude coordinate
       schema:
@@ -220,6 +236,24 @@ components:
       name: radius
       in: query
       description: distance in kilometers from geolocation coordinates
+      schema:
+        type: string
+    locality:
+      name: locality
+      in: query
+      description: town, city, village, etc.
+      schema:
+        type: string
+    region:
+      name: region
+      in: query
+      description: state, province, county, etc.
+      schema:
+        type: string
+    country:
+      name: country
+      in: query
+      description: country, city-state, etc.
       schema:
         type: string
   responses:

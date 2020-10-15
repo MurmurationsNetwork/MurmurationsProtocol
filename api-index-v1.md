@@ -90,7 +90,7 @@ Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their pr
 
 The `GET /nodes` endpoint requires an API key in order to prevent unauthorized harvesting of the data in the index.
 
-Aggregators can search for nodes based on the schema(s) nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain (kilometer) range from a specific location.
+Aggregators can search for nodes based on the schema(s) nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain (kilometer) range from a specific location or finding them based on the town/city, country, etc.
 
 It is envisioned that other search parameters will be added to this endpoint as they are defined and deemed useful for aggregator searching.
 
@@ -103,6 +103,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 - `schemaName` - unique schema name (only allow a single value per search)
 - `lastValidated` - Unix timestamp (in milliseconds)
 - `geolocation` - `latitude`, `longitude` & `range`
+- `mapAddress` - `locality`, `region`, `country`
 
 #### Output
 
@@ -110,3 +111,4 @@ It is envisioned that other search parameters will be added to this endpoint as 
     - `profileUrl`
     - `lastValidated` (in milliseconds)
     - `geolocation` - an object containing `latitude` & `longitude`
+    - `mapAddress` - an object containing `locality`, `region` & `country`
