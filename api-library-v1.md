@@ -37,10 +37,10 @@ The service running the Library API will regularly synchronize with the GitHub l
     }
   },
   {
-    "name": "tags-v1",
+    "name": "keywords-v1",
     "definition": {
-      "title": "Descriptive Tags",
-      "description": "The most common tags used to describe the entity",
+      "title": "Descriptive Keywords",
+      "description": "The most common keywords used to describe the entity",
       "type": "array",
       "items": {
         "type": "string"

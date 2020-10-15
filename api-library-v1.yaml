@@ -34,10 +34,10 @@ paths:
                       type: "string"
                       maxLength: 1000
                       context: "https://en.wikipedia.org/wiki/Mission_statement"
-                  - name: "tags-v1"
+                  - name: "keywords-v1"
                     definition:
-                      title: "Descriptive Tags"
-                      description: "The most common tags used to describe the entity"
+                      title: "Descriptive Keywords"
+                      description: "The most common keywords used to describe the entity"
                       type: "array"
                       items:
                           type: "string"
