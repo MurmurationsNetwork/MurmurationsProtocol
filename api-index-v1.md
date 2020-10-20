@@ -66,6 +66,25 @@ TODO: Add example
 > A `nodeId` is for future planning, so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile stored at the `profileUrl` that was submitted by the node. Nodes can compare `profileUrl`s and then `nodeId`s between themselves. They will also store a Unix timestamp (`lastChecked`) of when they obtained the `nodeId` for each `profileUrl`. The index with the oldest timestamp should download the profile from the `profileUrl` and regenerate the `nodeId`. This is just a rough idea of index syncing; it will need to be thought through in a lot more detail, including thinking about edge cases.
 > 
 
+### `GET /nodes/{nodeId}`
+
+The record of a node in the index's database can be in one of three possible states: `received`, `validated` and `posted`. The node will only be discoverable in the index when it has the status of `posted`.
+
+This endpoint enables the Node UI to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (e.g., when using `POST /nodes`).
+
+#### Input
+
+- the `nodeId` of the node's profile that is currently in the index
+
+#### Output
+
+##### Success
+
+- Confirmation of status (e.g., `posted` or `validated`)
+
+##### Error
+- Error reason (e.g., `profileUrl not in index`, etc.)
+
 ### `DELETE /nodes/{nodeId}`
 
 Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their profile from the index when they no longer want it listed.
