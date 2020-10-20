@@ -54,7 +54,7 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 ##### Success
 
 - `nodeId` - hash of profile located at `profileUrl`
-- `lastValidated` - Unix timestamp (in milliseconds)
+- `lastChecked` - Unix timestamp (in milliseconds)
 
 TODO: Add example
 
@@ -63,7 +63,7 @@ TODO: Add example
 
 > :construction: INDEX SYNCING
 >
-> A `nodeId` is for future planning, so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile stored at the `profileUrl` that was submitted by the node. Nodes can compare `profileUrl`s and then `nodeId`s between themselves. They will also store a Unix timestamp (`lastValidated`) of when they obtained the `nodeId` for each `profileUrl`. The index with the oldest timestamp should download the profile from the `profileUrl` and regenerate the `nodeId`. This is just a rough idea of index syncing; it will need to be thought through in a lot more detail, including thinking about edge cases.
+> A `nodeId` is for future planning, so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile stored at the `profileUrl` that was submitted by the node. Nodes can compare `profileUrl`s and then `nodeId`s between themselves. They will also store a Unix timestamp (`lastChecked`) of when they obtained the `nodeId` for each `profileUrl`. The index with the oldest timestamp should download the profile from the `profileUrl` and regenerate the `nodeId`. This is just a rough idea of index syncing; it will need to be thought through in a lot more detail, including thinking about edge cases.
 > 
 
 ### `DELETE /nodes/{nodeId}`
@@ -101,7 +101,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 #### Input
 
 - `schemaName` - unique schema name (only allow a single value per search)
-- `lastValidated` - Unix timestamp (in milliseconds)
+- `lastChecked` - Unix timestamp (in milliseconds)
 - `geolocation` - `latitude`, `longitude` & `range`
 - `mapAddress` - `locality`, `region`, `country`
 
@@ -109,6 +109,6 @@ It is envisioned that other search parameters will be added to this endpoint as 
 
 - Array of nodes with:
     - `profileUrl`
-    - `lastValidated` (in milliseconds)
+    - `lastChecked` (in milliseconds)
     - `geolocation` - an object containing `latitude` & `longitude`
     - `mapAddress` - an object containing `locality`, `region` & `country`

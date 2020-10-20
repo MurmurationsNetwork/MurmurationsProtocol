@@ -32,8 +32,8 @@ paths:
               value:
                 profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
                 linkedSchemas:
-                  - "455521A0657FB351689770EF3F51240C404A32F8B4026A42F056CB6A18533249"
-                  - "0A4E773A1FC70FD577166C03B514A9D2BD87A9EC4FA054BE05D89C2116ADFD58"
+                  - "demo_schema-v1"
+                  - "some_other_schema-v1"
       responses:
         200:
           description: OK
@@ -46,8 +46,8 @@ paths:
                     $ref: '#/components/schemas/PostNodeResponse'
               example:
                 data:
-                  nodeId: "59776CA5CAF24DB9669D847BBA3A13BD7052DA0A8CCCD548A335D8C88D186CE3"
-                  lastValidated: 1601979232403
+                  nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                  lastChecked: 1601979232403
         # TODO: Add non-generic error responses (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
@@ -65,11 +65,11 @@ paths:
         Aggregators can search for nodes based on any of the following parameters:
         
         - A specific schema (`schemaName`)
-        - When the node was last checked by the index (`lastValidated`)
+        - When the node was last checked by the index (`lastChecked`)
         - A radius range (in kilometers) from a specific location (e.g., _"25km from my current location"_)
       parameters:
         - $ref: '#/components/parameters/schemaName'
-        - $ref: '#/components/parameters/lastValidated'
+        - $ref: '#/components/parameters/lastChecked'
         - $ref: '#/components/parameters/latitude'
         - $ref: '#/components/parameters/longitude'
         - $ref: '#/components/parameters/radius'
@@ -89,7 +89,7 @@ paths:
               example:
                 data:
                   - profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
-                    lastValidated: 1601979232403
+                    lastChecked: 1601979232403
                     geolocation:
                       latitude: 51.509865
                       longitude: -0.118092
@@ -111,6 +111,37 @@ paths:
       security:
         - jwt: []
   /nodes/{nodeId}:
+    get:
+      tags:
+        - Node Endpoints
+      summary: Get a node's status from the index
+      description: |
+        TBC
+      parameters:
+        - $ref: '#/components/parameters/nodeId'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/GetNodeStatusResponse'
+              example:
+                data:
+                  profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                  nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                  lastChecked: 1601979232403
+                  status: "posted"
+        # TODO: Add non-generic error responses (e.g., `NodeId does not exist`, etc.)
+        400:
+          $ref: '#/components/responses/BadRequest'
+        429:
+          $ref: '#/components/responses/TooManyRequests'
+        500: 
+          $ref: '#/components/responses/ServerError'
     delete:
       tags:
         - Node Endpoints
@@ -161,7 +192,7 @@ components:
       properties:
         nodeId:
           type: string
-        lastValidated:
+        lastChecked:
           type: number
     DeleteNodeResponse:
       type: object
@@ -175,7 +206,7 @@ components:
         properties:
           profileUrl:
             type: string
-          lastValidated:
+          lastChecked:
             type: number
           geolocation:
             type: object
@@ -193,6 +224,21 @@ components:
                 type: string
               country:
                 type: string
+    GetNodeStatusResponse:
+      type: object
+      properties:
+          profileUrl:
+            type: string
+          nodeId:
+            type: string
+          lastChecked:
+            type: number
+          status:
+            type: string
+            enum:
+              - received
+              - validated
+              - posted
     Error:
       type: object
       title: Error
@@ -214,7 +260,7 @@ components:
       required: false
       schema:
         type: string
-    lastValidated:
+    lastChecked:
       name: validated
       in: query
       description: Unix timestamp when node was last validated by index
