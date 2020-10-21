@@ -8,14 +8,20 @@ The Index API describes how nodes, using predefined schemas, add, update and del
 
 Schemas define collections of data fields that nodes can fill in to share information about themselves. Think of a schema as a form template and each instance of a completed form as a profile.
 
-Nodes store their profiles on their website and then reference them in the index. The index validates that the profile meets the requirements of its schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the node's website (`profileUrl`) and the schema(s) that profile is/are based upon and must be validated against (`linkedSchemas`).
+Nodes store their profiles on their website and then reference them in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the node's website (`profileUrl`) and the name(s) of the schema(s) that profile is/are based upon and must be validated against (`linkedSchemas`).
 
-Using these two pieces of information, aggregators can then search the index for nodes with profiles that match certain schemas (`linkedSchemas`) they want to use to create maps and directories, and the index returns a list of URLs (`profileUrl`s) for the matched nodes' profiles. Aggregators then download each node's data from the `profileUrl` for use in their apps.
+Using these two pieces of information, aggregators can then search the index for nodes with profiles that match specific schemas they want to use to create maps and directories, and the index returns a list of URLs (`profileUrl`s) for the matched nodes' profiles. Aggregators then download each node's profile data for use in their apps.
 
-The index may (and usually will - future plans include multiple Indices; see Index Syncing below) also store additional data to enable aggregators to locate nodes based on other information in addition to the linked schemas. This additional information could/will include, for example:
+The index may (and usually will) also store additional data to enable aggregators to locate nodes based on other information in addition to the linked schemas. This additional information could/will include, for example:
 
 - _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "100km from me")
+- _Location data_ - town/city, country, etc. for searching based on map location
 - _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., "food co-ops")
+
+
+> :construction: INDEX SYNCING
+>
+> A `profileHash` is for future planning, and will also be stored for each node profile so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile (the entire JSON object containing all node profile data) stored at the `profileUrl` that was submitted by the node. Nodes can compare `nodeId`s (the unique hash of a `profileUrl`) and then `profileHash`es between themselves. They will also store a Unix timestamp (`lastChecked`) of when they last accessed the `profileUrl` and created the `profileHash` for each `nodeId`. The index with the oldest timestamp should download the profile from the `profileUrl` and regenerate the `profileHash`. This is just a rough idea of index syncing; it will need to be thought through in a lot more detail, including thinking about edge cases.
 
 ## Node Endpoints
 
@@ -37,7 +43,7 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 
 ```json
 {
-  "profileUrl": "https://node.site/optional-subdirectory/my-profile.json",
+  "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
   "linkedSchemas": [
     "demo_schema-v1",
     "some_other_schema-v1"
@@ -45,30 +51,30 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 }
 ```
 
-> :construction: HASH ALGORITHM
->
-> The example above uses the SHA256 hashing algorithm which produces a 64-character output. We should research if this is the best algorithm to use (e.g., should we use SHA512 instead?).
-
 #### Output
 
 ##### Success
 
-- `nodeId` - hash of profile located at `profileUrl`
-- `lastChecked` - Unix timestamp (in milliseconds)
+- `nodeId` - hash of the `profileUrl`
 
-TODO: Add example
+```json
+{
+  "data": {
+    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+  }
+}
+```
+
+> :construction: HASH ALGORITHM
+>
+> The example above uses the SHA256 hashing algorithm which produces a 64-character output. The purpose of hashing the `profileUrl` is to make it easy to reference as a path parameter when requesting information about the node from the index (e.g., `GET /nodes/{nodeId}` as described below).
 
 ##### Error
 - Error reason (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
 
-> :construction: INDEX SYNCING
->
-> A `nodeId` is for future planning, so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile stored at the `profileUrl` that was submitted by the node. Nodes can compare `profileUrl`s and then `nodeId`s between themselves. They will also store a Unix timestamp (`lastChecked`) of when they obtained the `nodeId` for each `profileUrl`. The index with the oldest timestamp should download the profile from the `profileUrl` and regenerate the `nodeId`. This is just a rough idea of index syncing; it will need to be thought through in a lot more detail, including thinking about edge cases.
-> 
-
 ### `GET /nodes/{nodeId}`
 
-The record of a node in the index's database can be in one of three possible states: `received`, `validated` and `posted`. The node will only be discoverable in the index when it has the status of `posted`.
+The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
 
 This endpoint enables the Node UI to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (e.g., when using `POST /nodes`).
 
@@ -80,10 +86,70 @@ This endpoint enables the Node UI to get and present an update to the node opera
 
 ##### Success
 
-- Confirmation of status (e.g., `posted` or `validated`)
+- Confirmation of status (e.g., `received`, `validated` or `posted`)
+
+###### Received
+```json
+{
+  "data": {
+    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "status": "received"
+  }
+}
+```
+
+###### Validated
+
+```json
+{
+  "data": {
+    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "lastChecked": 1601979232403,
+    "status": "validated"
+  }
+}
+```
+
+###### Posted
+```json
+{
+  "data": {
+    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "lastChecked": 1601979232403,
+    "status": "posted"
+  }
+}
+```
+
+###### Validation Failed
+```json
+{
+  "data": {
+    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "lastChecked": 1601979232403,
+    "status": "validation_failed"
+  }
+}
+```
+
+###### Post Failed
+```json
+{
+  "data": {
+    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "lastChecked": 1601979232403,
+    "status": "post_failed"
+  }
+}
+```
 
 ##### Error
-- Error reason (e.g., `profileUrl not in index`, etc.)
+- Error reason (e.g., `nodeId/profileUrl not found in index`, etc.)
 
 ### `DELETE /nodes/{nodeId}`
 
