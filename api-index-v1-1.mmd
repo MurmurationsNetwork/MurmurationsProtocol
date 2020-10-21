@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant Node UI
+    participant Node
+    participant Index
+    participant Validator
+    participant Library
+
+    Node UI->>Node: Post profile to profileUrl
+    Node UI->>+Index: Submit profileUrl & linkedSchemas (POST /nodes)
+    Index->>Index: Add node record to DB & create nodeId (hash of profileUrl)
+    Note over Index: status: received
+    Index->>-Node UI: Confirm node recorded in DB by returning nodeId
+    Index-x+Validator: node:created
+    Validator->>Node: Check if profile at profileUrl
+    Node-->>Validator: Return JSON profile data
+    Validator->>Validator: Set lastChecked parameter in DB
+    Validator->>Validator: Create profileHash (hash of JSON profile data)
+    Validator->>Library: Get schema(s) & fields
+    Library-->>Validator: Return schema(s) & fields
+    Validator->>Validator: Validate profile to schema(s) & fields
+    alt validate failed
+    Validator-xIndex: node:validation_failed
+    Note over Index: status: validation_failed
+    else validate success
+    Validator-x-Index: node:validated
+    Note over Index: status: validated
+    end
+    Index->>Index: Update node status in DB
+
+    Index->>Index: Post data into elasticsearch
+    alt post failed
+    Note over Index: status: post_failed
+    else post success
+    Note over Index: status: posted
+    end
+    Node UI->>+Index: Poll for status
+    Index->>Index: Get status from node record
+    Index->>-Node UI: Return profileUrl, nodeId, lastChecked, status

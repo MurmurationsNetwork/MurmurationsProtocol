@@ -72,6 +72,10 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 ##### Error
 - Error reason (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
 
+#### Sequence Diagram - Add Node Profile to Index
+
+![Add Node Profile to Index](api-index-v1-1.png)
+
 ### `GET /nodes/{nodeId}`
 
 The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
