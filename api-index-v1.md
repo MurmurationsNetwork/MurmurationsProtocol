@@ -69,9 +69,6 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 >
 > The example above uses the SHA256 hashing algorithm which produces a 64-character output. The purpose of hashing the `profileUrl` is to make it easy to reference as a path parameter when requesting information about the node from the index (e.g., `GET /nodes/{nodeId}` as described below).
 
-##### Error
-- Error reason (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
-
 #### Sequence Diagram - Add Node Profile to Index
 
 ![Add Node Profile to Index](api-index-v1-1.png)
@@ -128,15 +125,56 @@ This endpoint enables the Node UI to get and present an update to the node opera
 }
 ```
 
+##### Error
+
 ###### Validation Failed
+
+_Could not download profile from `profileUrl`_
+
+
 ```json
 {
-  "data": {
-    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "lastChecked": 1601979232403,
-    "status": "validation_failed"
-  }
+    "data": {
+        "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+        "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+        "status": "validation_failed"
+    },
+    "error": [
+        {
+            "status": "404",
+            "title": "Not Found",
+            "detail": "Cannot find the resource required to complete the request (e.g., page not available/accessible, server down)",
+            "source": {
+                "pointer": "#/data/profileUrl"
+            }
+        }
+    ]
+}
+```
+
+_Could not validate profile against one or more schemas_
+
+```json
+{
+    "data": {
+        "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+        "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+        "lastChecked": 1601979232403,
+        "status": "validation_failed"
+    },
+    "error": [
+        {
+            "status": "400",
+            "title": "Bad Request",
+            "detail": "Cannot process the request due to something that is perceived to be a client error (e.g., malformed request syntax)",
+            "meta": {
+                "failedValidationWith": [
+                    "demo_schema-v1",
+                    "some_other_schema-v1"
+                ]
+            }
+        }
+    ]
 }
 ```
 
@@ -152,9 +190,6 @@ This endpoint enables the Node UI to get and present an update to the node opera
 }
 ```
 
-##### Error
-- Error reason (e.g., `nodeId/profileUrl not found in index`, etc.)
-
 ### `DELETE /nodes/{nodeId}`
 
 Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their profile from the index when they no longer want it listed.
@@ -168,7 +203,7 @@ Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their pr
 
 ##### Success
 
-- Confirmation of removal (e.g., `Removed from index: https://node.site/optional-subdirectory/my-profile.json`)
+- Confirmation of removal (e.g., `200 OK` success status response code)
 
 ##### Error
 - Error reason (e.g., `profileUrl not in index`, `profile still available at profileUrl`, etc.)

@@ -12,9 +12,18 @@ sequenceDiagram
     Index->>-Node UI: Confirm node recorded in DB by returning nodeId
     Index-x+Validator: node:created
     Validator->>Node: Check if profile at profileUrl
+    alt check failed
+    Node-->>Validator: Profile not found or node unreachable
+    Validator->>Node: Check if profile at profileUrl (2 more times)
+    opt all checks failed
+    Validator-xIndex: node:validation_failed
+    Note over Index: status: validation_failed
+    end
+    else check success
     Node-->>Validator: Return JSON profile data
-    Validator->>Validator: Set lastChecked parameter in DB
-    Validator->>Validator: Create profileHash (hash of JSON profile data)
+    Validator->>Validator: Set lastChecked (Unix timestamp) in DB
+    Validator->>Validator: Set profileHash (hash of JSON profile data) in DB
+    end
     Validator->>Library: Get schema(s) & fields
     Library-->>Validator: Return schema(s) & fields
     Validator->>Validator: Validate profile to schema(s) & fields
@@ -26,7 +35,6 @@ sequenceDiagram
     Note over Index: status: validated
     end
     Index->>Index: Update node status in DB
-
     Index->>Index: Post data into elasticsearch
     alt post failed
     Note over Index: status: post_failed

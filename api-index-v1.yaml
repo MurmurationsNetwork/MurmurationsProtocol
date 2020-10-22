@@ -155,16 +155,6 @@ paths:
       responses:
         200:
           description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/DeleteNodeResponse'
-              example:
-                data:
-                  message: "Removed from index: https://node.site/optional-subdirectory/node-profile.json"
         # TODO: Add non-generic error responses (e.g., `NodeId does not exist`, `Profile not yet removed from node`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
@@ -194,11 +184,6 @@ components:
           type: string
         lastChecked:
           type: number
-    DeleteNodeResponse:
-      type: object
-      properties:
-        message:
-          type: string
     GetNodesResponse:
       type: array
       items:
