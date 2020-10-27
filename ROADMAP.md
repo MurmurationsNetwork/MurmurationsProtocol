@@ -1,16 +1,29 @@
 # Roadmap
 
+## Release 1
+
 - Further design and document the Murmurations Protocol
-    - **DONE** - Define the library structure
-    - **IN PROGRESS** - Define JSON Schema validation of fields and schemas
+  - **DONE** - Define the library structure
+  - **IN PROGRESS** - Define JSON Schema validation of fields and schemas
+  - Document the protocol, APIs & DevOps
 - Rebuild Index service
-    - **IN PROGRESS** - Define REST API for Index service
-    - Use JSON Schema for schema/profile validation
-    - Require authentication for aggregators
+  - **IN PROGRESS** - Define REST API for Index service
+  - **IN PROGRESS** - Use JSON Schema for one-to-one schema/profile validation
+  - Define and write tests for failure, validation & concurrency scenarios
 - Rebuild Library service
-    - **IN PROGRESS** - Define REST API for Library service
-    - Sync library git repo to serve schemas and fields directly to Index and Node UI
+  - Define REST API for Library service
+  - Sync library git repo to serve schemas and fields directly to Index and Node UI
 - Rebuild Node UI
-    - Use vanilla JS/HTML/CSS to enable wrapping in CMS plug-ins
-    - Use JSON Schema for schema/profile validation
+  - **IN PROGRESS** - Use vanilla JS/HTML/CSS to enable wrapping in CMS plug-ins
+  - **IN PROGRESS** - Leverage JSON Editor to generate forms from schemas
+  - **IN PROGRESS** - Use JSON Schema for one-to-one schema/profile validation
 - Rebuild demo Aggregators (map, directory, RSS feed)
+  - Adapt apps to consume new schema format
+
+## Release 2
+
+- Index service
+  - Require authentication for aggregators
+  - Use JSON Schema for many-to-one schemas/profile validation
+- Node UI
+  - Use JSON Schema for many-to-one schemas/profile validation
