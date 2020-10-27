@@ -16,7 +16,7 @@ The index may (and usually will) also store additional data to enable aggregator
 
 - _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "100km from me")
 - _Location data_ - town/city, country, etc. for searching based on map location
-- _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., "food co-ops")
+- _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., food co-ops: [https://en.wikipedia.org/wiki/Food_cooperative](https://en.wikipedia.org/wiki/Food_cooperative))
 
 
 > :construction: INDEX SYNCING
@@ -39,7 +39,7 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 
 - Profile that validates to a referenced schema (or list of schemas), available at a publicly accessible URL
     - The profile must be available at the `profileUrl` or it will not be recorded by the index
-- One or more `schemaName`s (unique schema name within a namespace) against which the profile must be validated
+- One or more `linkedSchema`s (unique `schemaName`(s) within a namespace) against which the profile must be validated
 
 ```json
 {
@@ -120,6 +120,7 @@ This endpoint enables the Node UI to get and present an update to the node opera
     "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
     "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
     "lastChecked": 1601979232403,
+    "profileHash": "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf",
     "status": "posted"
   }
 }
@@ -139,14 +140,9 @@ _Could not download profile from `profileUrl`_
         "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
         "status": "validation_failed"
     },
-    "error": [
+    "errors": [
         {
-            "status": "404",
-            "title": "Not Found",
-            "detail": "Cannot find the resource required to complete the request (e.g., page not available/accessible, server down)",
-            "source": {
-                "pointer": "#/data/profileUrl"
-            }
+            "message": "Profile not found at profileUrl: {profileUrl}"
         }
     ]
 }
@@ -162,17 +158,9 @@ _Could not validate profile against one or more schemas_
         "lastChecked": 1601979232403,
         "status": "validation_failed"
     },
-    "error": [
+    "errors": [
         {
-            "status": "400",
-            "title": "Bad Request",
-            "detail": "Cannot process the request due to something that is perceived to be a client error (e.g., malformed request syntax)",
-            "meta": {
-                "failedValidationWith": [
-                    "demo_schema-v1",
-                    "some_other_schema-v1"
-                ]
-            }
+            "message": "Failed validation with schema: {schemaName}"
         }
     ]
 }
@@ -186,7 +174,12 @@ _Could not validate profile against one or more schemas_
     "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
     "lastChecked": 1601979232403,
     "status": "post_failed"
-  }
+  },
+    "errors": [
+        {
+            "message": "Profile not posted to index. Will reattempt soon when service is fully operational."
+        }
+    ]
 }
 ```
 
