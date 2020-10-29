@@ -47,8 +47,6 @@ paths:
               example:
                 data:
                   nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
-                  lastChecked: 1601979232403
-        # TODO: Add non-generic error responses (e.g., `Failed validation with schema: {schemaName}`, `Profile not found at profileUrl: {profileUrl}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
         429:
@@ -129,13 +127,55 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/GetNodeStatusResponse'
-              example:
-                data:
-                  profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
-                  nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
-                  lastChecked: 1601979232403
-                  status: "posted"
         # TODO: Add non-generic error responses (e.g., `NodeId does not exist`, etc.)
+              examples:
+                received:
+                  value:
+                    data:
+                      profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                      nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                      status: "received"
+                validated:
+                  value:
+                    data:
+                      profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                      nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                      lastChecked: 1601979232403
+                      status: "validated"
+                posted:
+                  value:
+                    data:
+                      profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                      nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                      lastChecked: 1601979232403
+                      profileHash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                      status: "posted"
+                validation_failed_no_profileUrl:
+                  value:
+                    data:
+                      profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                      nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                      status: "validation_failed"
+                      errors:
+                        message: "Profile not found at profileUrl: {profileUrl}"
+                validation_failed_with_schema:
+                  value:
+                    data:
+                      profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                      nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                      lastChecked: 1601979232403
+                      status: "validation_failed"
+                      errors:
+                        message: "Failed validation with schema: {schemaName}"
+                post_failed:
+                  value:
+                    data:
+                      profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
+                      nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                      lastChecked: 1601979232403
+                      status: "post_failed"
+                      errors:
+                        message: "Profile not posted to index. Will reattempt soon when service is fully operational."
         400:
           $ref: '#/components/responses/BadRequest'
         429:
@@ -179,15 +219,18 @@ components:
             type: string
     PostNodeResponse:
       type: object
+      required:
+        - nodeId
       properties:
         nodeId:
           type: string
-        lastChecked:
-          type: number
     GetNodesResponse:
       type: array
       items:
         type: object
+        required:
+          - profileUrl
+          - lastChecked
         properties:
           profileUrl:
             type: string
@@ -211,6 +254,10 @@ components:
                 type: string
     GetNodeStatusResponse:
       type: object
+      required:
+        - profileUrl
+        - nodeId
+        - status
       properties:
           profileUrl:
             type: string
@@ -218,12 +265,16 @@ components:
             type: string
           lastChecked:
             type: number
+          profileHash:
+            type: string
           status:
             type: string
             enum:
               - received
               - validated
+              - validation_failed
               - posted
+              - post_failed
     Error:
       type: object
       title: Error
