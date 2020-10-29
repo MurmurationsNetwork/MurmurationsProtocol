@@ -9,6 +9,7 @@
 - Rebuild Index service
   - **IN PROGRESS** - Define REST API for Index service
   - **IN PROGRESS** - Use JSON Schema for one-to-one schema/profile validation
+  - Use JSON Schema for many-to-one schemas/profile validation
   - Define and write tests for failure, validation & concurrency scenarios
 - Rebuild Library service
   - Define REST API for Library service
@@ -17,6 +18,7 @@
   - **IN PROGRESS** - Use vanilla JS/HTML/CSS to enable wrapping in CMS plug-ins
   - **IN PROGRESS** - Leverage JSON Editor to generate forms from schemas
   - **IN PROGRESS** - Use JSON Schema for one-to-one schema/profile validation
+  - Use JSON Schema for many-to-one schemas/profile validation
 - Rebuild demo Aggregators (map, directory, RSS feed)
   - Adapt apps to consume new schema format
 
@@ -24,6 +26,3 @@
 
 - Index service
   - Require authentication for aggregators
-  - Use JSON Schema for many-to-one schemas/profile validation
-- Node UI
-  - Use JSON Schema for many-to-one schemas/profile validation
