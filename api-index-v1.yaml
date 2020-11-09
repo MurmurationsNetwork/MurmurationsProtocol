@@ -17,11 +17,11 @@ paths:
         - Node Endpoints
       summary: Add a node to the index
       description: |
-        A node adds its profile to the index by posting the location of the profile (`profileUrl`) and a list of one or more schemas (`linkedSchemas`) against which the profile must be validated.
+        A node adds its profile to the index by posting the location of the profile (`profileUrl`). The profile includes a list of one or more schemas (`linkedSchemas`) against which the profile must be validated.
         
-        Each `linkedSchemas` item is a hash of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schemaHash}.json`. For example:
+        Each `linkedSchemas` item is a hash of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schemaName}.json`. For example:
         
-        `https://library.site/schemas/455521A0...18533249.json`
+        `https://library.site/schemas/demo-v1.json`
       requestBody:
         required: true
         content:
@@ -31,9 +31,6 @@ paths:
             example:
               value:
                 profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
-                linkedSchemas:
-                  - "demo_schema-v1"
-                  - "some_other_schema-v1"
       responses:
         200:
           description: OK
@@ -46,7 +43,7 @@ paths:
                     $ref: '#/components/schemas/PostNodeResponse'
               example:
                 data:
-                  nodeId: "59776ca5caf24db9669d847bba3a13bd7052da0a8cccd548a335d8c88d186ce3"
+                  nodeId: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
         400:
           $ref: '#/components/responses/BadRequest'
         429:
@@ -64,12 +61,12 @@ paths:
         
         - A specific schema (`schemaName`)
         - When the node was last checked by the index (`lastChecked`)
-        - A radius range (in kilometers) from a specific location (e.g., _"25km from my current location"_)
+        - A radius range (in kilometers(_"25km"_) or miles(_"15mi"_)) from a specific location (e.g., _"25km from my current location"_)
       parameters:
         - $ref: '#/components/parameters/schemaName'
         - $ref: '#/components/parameters/lastChecked'
-        - $ref: '#/components/parameters/latitude'
-        - $ref: '#/components/parameters/longitude'
+        - $ref: '#/components/parameters/lat'
+        - $ref: '#/components/parameters/lon'
         - $ref: '#/components/parameters/radius'
         - $ref: '#/components/parameters/locality'
         - $ref: '#/components/parameters/region'
@@ -89,13 +86,13 @@ paths:
                   - profileUrl: "https://node.site/optional-subdirectory/node-profile.json"
                     lastChecked: 1601979232403
                     geolocation:
-                      latitude: 51.509865
-                      longitude: -0.118092
-                    mapAddress:
+                      lat: 51.509865
+                      lon: -0.118092
+                    maplocation:
                       locality: London
                       region: Greater London
                       country: United Kingdom
-        # TODO: Add non-generic error responses (e.g., `schemaName does not exist: {schemaName}`, `Invalid latitude (must be number): {latitude}`, etc.)
+        # TODO: Add non-generic error responses (e.g., `schemaName does not exist: {schemaName}`, `Invalid lat (must be number): {lat}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
         401:
@@ -209,14 +206,9 @@ components:
       type: object
       required:
         - profileUrl
-        - linkedSchemas
       properties:
         profileUrl:
           type: string
-        linkedSchemas:
-          type: array
-          items:
-            type: string
     PostNodeResponse:
       type: object
       required:
@@ -239,11 +231,11 @@ components:
           geolocation:
             type: object
             properties:
-              latitude:
+              lat:
                 type: number
-              longitude:
+              lon:
                 type: number
-          mapAddress:
+          maplocation:
             type: object
             properties:
               locality:
@@ -277,10 +269,14 @@ components:
               - post_failed
     Error:
       type: object
-      title: Error
+      required:
+        - message
+        - status
       properties:
         message:
           type: string
+        status:
+          type: integer
   parameters:
     nodeId:
       name: nodeId
@@ -302,16 +298,16 @@ components:
       description: Unix timestamp when node was last validated by index
       schema:
         type: string
-    latitude:
-      name: latitude
+    lat:
+      name: lat
       in: query
-      description: geolocation latitude coordinate
+      description: geolocation lat coordinate
       schema:
         type: string
-    longitude:
-      name: longitude
+    lon:
+      name: lon
       in: query
-      description: geolocation longitude coordinate
+      description: geolocation lon coordinate
       schema:
         type: string
     radius:
@@ -353,6 +349,7 @@ components:
           example:
             errors:
               - message: <named> parameter is missing.
+                status: 400
     Unauthorized:
       description: There was an issue with the authentication data for the request.
       content:
@@ -367,6 +364,7 @@ components:
           example:
             errors:
               - message: Could not authenticate you.
+                status: 401
     Forbidden:
       description: User does not have permission to access the resource.
       content:
@@ -381,6 +379,7 @@ components:
           example:
             errors:
               - message: Permission denied.
+                status: 403
     TooManyRequests:
       description: The request limit for this resource has been reached for the current rate limit window.
       content:
@@ -395,6 +394,7 @@ components:
           example:
             errors:
               - message: Rate limit exceeded.
+                status: 429
     ServerError:
       description: An unknown internal error occurred.
       content:
@@ -409,6 +409,7 @@ components:
           example:
             errors:
               - message: Internal server error triggered.
+                status: 500
   securitySchemes:
     jwt:
       type: http

@@ -14,8 +14,8 @@ Using these two pieces of information, aggregators can then search the index for
 
 The index may (and usually will) also store additional data to enable aggregators to locate nodes based on other information in addition to the linked schemas. This additional information could/will include, for example:
 
-- _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "100km from me")
-- _Location data_ - town/city, country, etc. for searching based on map location
+- _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "1km from my current location" or "60 miles from my home")
+- _Maplocation data_ - town/city, country, etc. for searching based on map location
 - _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., food co-ops: [https://en.wikipedia.org/wiki/Food_cooperative](https://en.wikipedia.org/wiki/Food_cooperative))
 
 
@@ -25,49 +25,41 @@ The index may (and usually will) also store additional data to enable aggregator
 
 ## Node Endpoints
 
-### `POST /nodes`
+### [`POST /nodes`](https://app.swaggerhub.com/apis/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/post_nodes)
 
 Node operators will call the `POST /nodes` endpoint to add their nodes to the index both when they first create a profile and to indicate when they have made changes to that profile.
 
-They need to store their profile at a publicly accessible URL (`profileUrl`), and then submit the `profileUrl` along with the schema(s) (`linkedSchemas`) against which the profile must be validated.
+They need to store their profile at a publicly accessible URL (`profileUrl`), and then submit the `profileUrl` to the index.
 
 > :warning: SCHEMA REQUIREMENT
 >
 > The `profileUrl` (string) and `linkedSchemas` (array of strings) properties must be included in every schema as required fields, so the library should never accept schemas and the index should never accept profiles without these two properties.
+>
+> So all profiles will always contain these two properties:
+> 
+> ```json
+> {
+>   "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
+>   "linkedSchemas": [
+>     "demo-v1",
+>     "demo-v2"
+>   ]
+> }
+> ```
 
 #### Input
 
 - Profile that validates to a referenced schema (or list of schemas), available at a publicly accessible URL
     - The profile must be available at the `profileUrl` or it will not be recorded by the index
-- One or more `linkedSchema`s (unique `schemaName`(s) within a namespace) against which the profile must be validated
-
-```json
-{
-  "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-  "linkedSchemas": [
-    "demo_schema-v1",
-    "some_other_schema-v1"
-  ]
-}
-```
+    - The profile must include one or more `linkedSchema`s (unique `schemaName`(s) within a namespace) against which the profile must be validated
 
 #### Output
 
-##### Success
-
 - `nodeId` - hash of the `profileUrl`
-
-```json
-{
-  "data": {
-    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-  }
-}
-```
 
 > :construction: HASH ALGORITHM
 >
-> The example above uses the SHA256 hashing algorithm which produces a 64-character output. The purpose of hashing the `profileUrl` is to make it easy to reference as a path parameter when requesting information about the node from the index (e.g., `GET /nodes/{nodeId}` as described below).
+> The current implementation of the index uses the SHA256 hashing algorithm which produces a 64-character output. The purpose of hashing the `profileUrl` is to make it easy to reference as a path parameter when requesting information about the node from the index (e.g., `GET /nodes/{nodeId}` as described below).
 
 #### Sequence Diagram - Add Node Profile to Index
 
@@ -77,7 +69,7 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 
 The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
 
-This endpoint enables the Node UI to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (e.g., when using `POST /nodes`).
+This endpoint enables the Node UI to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
 
 #### Input
 
@@ -183,7 +175,7 @@ _Could not validate profile against one or more schemas_
 }
 ```
 
-### `DELETE /nodes/{nodeId}`
+### [`DELETE /nodes/{nodeId}`](https://app.swaggerhub.com/apis/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/delete_nodes__nodeId_)
 
 Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their profile from the index when they no longer want it listed.
 
@@ -220,7 +212,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 - `schemaName` - unique schema name (only allow a single value per search)
 - `lastChecked` - Unix timestamp (in milliseconds)
 - `geolocation` - `latitude`, `longitude` & `range`
-- `mapAddress` - `locality`, `region`, `country`
+- `maplocation` - `locality`, `region`, `country`
 
 #### Output
 
@@ -228,4 +220,4 @@ It is envisioned that other search parameters will be added to this endpoint as 
     - `profileUrl`
     - `lastChecked` (in milliseconds)
     - `geolocation` - an object containing `latitude` & `longitude`
-    - `mapAddress` - an object containing `locality`, `region` & `country`
+    - `maplocation` - an object containing `locality`, `region` & `country`
