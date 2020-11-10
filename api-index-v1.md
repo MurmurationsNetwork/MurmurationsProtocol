@@ -1,6 +1,6 @@
 # Murmurations Index API
 
-> :construction: PROPOSED BASE URL
+> :link: BASE URL
 >
 > https://index.murmurations.network/v1/{endpoint}
 
@@ -8,20 +8,20 @@ The Index API describes how nodes, using predefined schemas, add, update and del
 
 Schemas define collections of data fields that nodes can fill in to share information about themselves. Think of a schema as a form template and each instance of a completed form as a profile.
 
-Nodes store their profiles on their website and then reference them in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the node's website (`profileUrl`) and the name(s) of the schema(s) that profile is/are based upon and must be validated against (`linkedSchemas`).
+Nodes store their profiles on their website and then reference them in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the node's website (`profile_url`) and the name(s) of the schema(s) that profile is/are based upon and must be validated against (`linked_schemas`).
 
-Using these two pieces of information, aggregators can then search the index for nodes with profiles that match specific schemas they want to use to create maps and directories, and the index returns a list of URLs (`profileUrl`s) for the matched nodes' profiles. Aggregators then download each node's profile data for use in their apps.
+Using these two pieces of information, aggregators can then search the index for nodes with profiles that match specific schemas they want to use to create maps and directories, and the index returns a list of URLs (`profile_url`s) for the matched nodes' profiles. Aggregators then download each node's profile data for use in their apps.
 
-The index may (and usually will) also store additional data to enable aggregators to locate nodes based on other information in addition to the linked schemas. This additional information could/will include, for example:
+The index may (and usually will) also store additional data to enable aggregators to locate nodes based on other information in addition to their associated schemas. This additional information could/will include, for example:
 
 - _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "1km from my current location" or "60 miles from my home")
-- _Maplocation data_ - town/city, country, etc. for searching based on map location
+- _Location data_ - town/city, country, etc. for searching based on map location
 - _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., food co-ops: [https://en.wikipedia.org/wiki/Food_cooperative](https://en.wikipedia.org/wiki/Food_cooperative))
 
 
 > :construction: INDEX SYNCING
 >
-> A `profileHash` is for future planning, and will also be stored for each node profile so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile (the entire JSON object containing all node profile data) stored at the `profileUrl` that was submitted by the node. Nodes can compare `nodeId`s (the unique hash of a `profileUrl`) and then `profileHash`es between themselves. They will also store a Unix timestamp (`lastChecked`) of when they last accessed the `profileUrl` and created the `profileHash` for each `nodeId`. The index with the oldest timestamp should download the profile from the `profileUrl` and regenerate the `profileHash`. This is just a rough idea of index syncing; it will need to be thought through in a lot more detail, including thinking about edge cases.
+> A `profile_hash` is for future planning, and will also be stored for each node profile so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile (the entire JSON object containing all node profile data) stored at the `profile_url` that was submitted by the node. Nodes can compare `node_id`s (the unique hash of a `profile_url`) and then `profile_hash`es between themselves. They will also store a Unix timestamp (`last_validated`) of when they last accessed the `profile_url` and created the `profile_hash` for each `node_id`. The index with the oldest timestamp should download the profile from the `profile_url` and regenerate the `profile_hash`. This is just a rough idea of index syncing; it will need to be thought through in more detail, including thinking about edge cases.
 
 ## Node Endpoints
 
@@ -29,17 +29,16 @@ The index may (and usually will) also store additional data to enable aggregator
 
 Node operators will call the `POST /nodes` endpoint to add their nodes to the index both when they first create a profile and to indicate when they have made changes to that profile.
 
-They need to store their profile at a publicly accessible URL (`profileUrl`), and then submit the `profileUrl` to the index.
+They need to store their profile at a publicly accessible URL (`profile_url`), and then submit the `profile_url` to the index.
 
 > :warning: SCHEMA REQUIREMENT
 >
-> The `profileUrl` (string) and `linkedSchemas` (array of strings) properties must be included in every schema as required fields, so the library should never accept schemas and the index should never accept profiles without these two properties.
+> A list of `linked_schemas` (array of strings) must be included in every profile (and therefore every schema) as a required field, so the library should never accept schemas and the index should never accept profiles without the `linked_schemas` property.
 >
-> So all profiles will always contain these two properties:
+> So all profiles will always contain a `linked_schemas` property:
 > 
 > ```json
 > {
->   "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
 >   "linkedSchemas": [
 >     "demo-v1",
 >     "demo-v2"
@@ -50,22 +49,22 @@ They need to store their profile at a publicly accessible URL (`profileUrl`), an
 #### Input
 
 - Profile that validates to a referenced schema (or list of schemas), available at a publicly accessible URL
-    - The profile must be available at the `profileUrl` or it will not be recorded by the index
-    - The profile must include one or more `linkedSchema`s (unique `schemaName`(s) within a namespace) against which the profile must be validated
+    - The profile must be available at the `profile_url` or it can't be recorded by the index
+    - The profile must include one or more `linked_schemas` (unique schema name(s) within a namespace) against which the profile must be validated
 
 #### Output
 
-- `nodeId` - hash of the `profileUrl`
+- `node_id` - hash of the `profile_url`
 
 > :construction: HASH ALGORITHM
 >
-> The current implementation of the index uses the SHA256 hashing algorithm which produces a 64-character output. The purpose of hashing the `profileUrl` is to make it easy to reference as a path parameter when requesting information about the node from the index (e.g., `GET /nodes/{nodeId}` as described below).
+> The current implementation of the index uses the SHA256 hashing algorithm which produces a 64-character output. The purpose of hashing the `profile_url` is to make it easy to reference as a path parameter when requesting information about the node from the index (e.g., `GET /nodes/{node_id}` as described below).
 
 #### Sequence Diagram - Add Node Profile to Index
 
 ![Add Node Profile to Index](api-index-v1-1.png)
 
-### `GET /nodes/{nodeId}`
+### `GET /nodes/{node_id}`
 
 The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
 
@@ -73,7 +72,7 @@ This endpoint enables the Node UI to get and present an update to the node opera
 
 #### Input
 
-- the `nodeId` of the node's profile that is currently in the index
+- the `node_id` of the node's profile that is currently in the index
 
 #### Output
 
@@ -85,8 +84,8 @@ This endpoint enables the Node UI to get and present an update to the node opera
 ```json
 {
   "data": {
-    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
     "status": "received"
   }
 }
@@ -97,9 +96,9 @@ This endpoint enables the Node UI to get and present an update to the node opera
 ```json
 {
   "data": {
-    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "lastChecked": 1601979232403,
+    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
+    "last_validated": 1601979232403,
     "status": "validated"
   }
 }
@@ -109,10 +108,10 @@ This endpoint enables the Node UI to get and present an update to the node opera
 ```json
 {
   "data": {
-    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "lastChecked": 1601979232403,
-    "profileHash": "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf",
+    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
+    "last_validated": 1601979232403,
+    "profile_hash": "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf",
     "status": "posted"
   }
 }
@@ -122,21 +121,19 @@ This endpoint enables the Node UI to get and present an update to the node opera
 
 ###### Validation Failed
 
-_Could not download profile from `profileUrl`_
+_Could not download profile from `profile_url`_
 
 
 ```json
 {
     "data": {
-        "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-        "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+        "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+        "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
         "status": "validation_failed"
     },
-    "errors": [
-        {
-            "message": "Profile not found at profileUrl: {profileUrl}"
-        }
-    ]
+        "failure_reasons": [
+            "Could not read from profile_url: https://node.site/optional-subdirectory/node-profile.json"
+        ]
 }
 ```
 
@@ -145,16 +142,29 @@ _Could not validate profile against one or more schemas_
 ```json
 {
     "data": {
-        "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-        "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-        "lastChecked": 1601979232403,
+        "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+        "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
         "status": "validation_failed"
     },
-    "errors": [
-        {
-            "message": "Failed validation with schema: {schemaName}"
-        }
-    ]
+        "failure_reasons": [
+            "demo-v1.geolocation.lat: Invalid type. Expected: number, given: string",
+            "demo-v1.geolocation.lon: Invalid type. Expected: number, given: string"
+        ]
+}
+```
+
+_Could not find one or more schemas in library for validation_
+
+```json
+{
+    "data": {
+        "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+        "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
+        "status": "validation_failed"
+    },
+        "failure_reasons": [
+            "Could not read from schema: demo-v3"
+        ]
 }
 ```
 
@@ -162,27 +172,25 @@ _Could not validate profile against one or more schemas_
 ```json
 {
   "data": {
-    "profileUrl": "https://node.site/optional-subdirectory/node-profile.json",
-    "nodeId": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "lastChecked": 1601979232403,
+    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
+    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
+    "last_validated": 1601979232403,
     "status": "post_failed"
   },
-    "errors": [
-        {
-            "message": "Profile not posted to index. Will reattempt soon when service is fully operational."
-        }
+    "failure_reasons": [
+        "Profile not posted to index. Will reattempt soon when service is fully operational."
     ]
 }
 ```
 
-### [`DELETE /nodes/{nodeId}`](https://app.swaggerhub.com/apis/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/delete_nodes__nodeId_)
+### [`DELETE /nodes/{node_id}`](https://app.swaggerhub.com/apis/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/delete_nodes__node__id_)
 
-Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their profile from the index when they no longer want it listed.
+Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their profile from the index when they no longer want it listed.
 
 #### Input
 
-- the `nodeId` of the profile that is currently in the index
-    - The profile must no longer be available at the `profileUrl` (i.e., should return a `404 - Not Found` error when accessing the URL) or it will not be removed from the index
+- the `node_id` of the profile that is currently in the index
+    - The profile must no longer be available at the `profile_url` (i.e., should return a `404 Not Found` error when accessing the URL) or it will not be removed from the index
 
 #### Output
 
@@ -191,33 +199,36 @@ Node operators will use the `DELETE /nodes/{nodeId}` endpoint to remove their pr
 - Confirmation of removal (e.g., `200 OK` success status response code)
 
 ##### Error
-- Error reason (e.g., `profileUrl not in index`, `profile still available at profileUrl`, etc.)
+- Return a `404 Not Found` error in the following two cases:
+    1. Profile does not exist in the index
+    2. Profile is still available at its URL on the node's website
+- Although an error message could be displayed if the `profile_url` requested for deletion is still available at its URL, doing so would give away the location of a profile, so just return a `404 Not Found` error
 
 ## Aggregator Endpoints
 
 ### `GET /nodes`
 
-The `GET /nodes` endpoint requires an API key in order to prevent unauthorized harvesting of the data in the index.
+The `GET /nodes` endpoint will eventually require an API key in order to prevent unauthorized harvesting of data from the index.
 
-Aggregators can search for nodes based on the schema(s) nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain (kilometer) range from a specific location or finding them based on the town/city, country, etc.
+Aggregators can search for nodes based on the schema(s) nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc.
 
 It is envisioned that other search parameters will be added to this endpoint as they are defined and deemed useful for aggregator searching.
 
 > :construction: SEARCH BY ORGANIZATION TYPE
 >
-> We need to offer the ability to search by type of organization, but the methodology for defining and recording the organization type still needs to be determined ([see this issue for updates](https://github.com/MurmurationsNetwork/MurmurationsProtocol/issues/6)).
+> The ability to search by type of organization will eventually be offered as well, but the methodology for defining and recording the organization type still needs to be determined ([see this issue for updates](https://github.com/MurmurationsNetwork/MurmurationsProtocol/issues/6)).
 
 #### Input
 
-- `schemaName` - unique schema name (only allow a single value per search)
-- `lastChecked` - Unix timestamp (in milliseconds)
-- `geolocation` - `latitude`, `longitude` & `range`
-- `maplocation` - `locality`, `region`, `country`
+- `schema` - unique schema name (only allow a single value per search)
+- `last_validated` - Unix timestamp (in milliseconds)
+- `geolocation` - `lat`, `lon` & `range`
+- `location` - `locality`, `region`, `country`
 
 #### Output
 
 - Array of nodes with:
-    - `profileUrl`
-    - `lastChecked` (in milliseconds)
-    - `geolocation` - an object containing `latitude` & `longitude`
-    - `maplocation` - an object containing `locality`, `region` & `country`
+    - `profile_url`
+    - `last_validated` (in milliseconds)
+    - `geolocation` - an object containing `lat` & `lon`
+    - `location` - an object containing `locality`, `region` & `country`
