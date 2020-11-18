@@ -62,7 +62,7 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 
 #### Sequence Diagram - Add Node Profile to Index
 
-![Add Node Profile to Index](api-index-v1-1.png)
+![Add Node Profile to Index](index_api-v1-diagram_1.png)
 
 ### [`GET /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/get_nodes__node_id_)
 
