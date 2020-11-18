@@ -33,10 +33,8 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 
 > :warning: SCHEMA REQUIREMENT
 >
-> A list of `linked_schemas` (array of strings) must be included in every profile (and therefore every schema) as a required field, so the library should never accept schemas and the index should never accept profiles without the `linked_schemas` property.
+> A list of `linked_schemas` (array of strings) must be included in every profile (and therefore every schema) as a required field.
 >
-> Therefore all profiles will always contain a `linked_schemas` property:
-> 
 > ```json
 > {
 >   "linkedSchemas": [
@@ -45,6 +43,8 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 >   ]
 > }
 > ```
+>
+> The library should never accept schemas and the index should never accept profiles without the `linked_schemas` property.
 
 #### Input
 
@@ -76,112 +76,23 @@ This endpoint enables the Node UI to get and present an update to the node opera
 
 #### Output
 
+Detailed response examples can be seen in the [Open API specification](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/get_nodes__node_id_) under the _Responses_ section for `200 OK` response code.
+
 ##### Success
 
 - Confirmation of status (e.g., `received`, `validated` or `posted`)
-
-###### Received
-```json
-{
-  "data": {
-    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-    "status": "received"
-  }
-}
-```
-
-###### Validated
-
-```json
-{
-  "data": {
-    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-    "last_validated": 1601979232403,
-    "status": "validated"
-  }
-}
-```
-
-###### Posted
-```json
-{
-  "data": {
-    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-    "last_validated": 1601979232403,
-    "profile_hash": "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf",
-    "status": "posted"
-  }
-}
-```
 
 ##### Error
 
 ###### Validation Failed
 
-_Could not download profile from `profile_url`_
-
-
-```json
-{
-    "data": {
-        "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-        "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-        "status": "validation_failed"
-    },
-        "failure_reasons": [
-            "Could not read from profile_url: https://node.site/optional-subdirectory/node-profile.json"
-        ]
-}
-```
-
-_Could not validate profile against one or more schemas_
-
-```json
-{
-    "data": {
-        "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-        "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-        "status": "validation_failed"
-    },
-        "failure_reasons": [
-            "demo-v1.geolocation.lat: Invalid type. Expected: number, given: string",
-            "demo-v1.geolocation.lon: Invalid type. Expected: number, given: string"
-        ]
-}
-```
-
-_Could not find one or more schemas in library for validation_
-
-```json
-{
-    "data": {
-        "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-        "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-        "status": "validation_failed"
-    },
-        "failure_reasons": [
-            "Could not read from schema: demo-v3"
-        ]
-}
-```
+- Could not download profile from `profile_url`
+- Could not validate profile against one or more schemas
+- Could not find one or more schemas in library for validation
 
 ###### Post Failed
-```json
-{
-  "data": {
-    "node_id": "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38",
-    "profile_url": "https://node.site/optional-subdirectory/node-profile.json",
-    "last_validated": 1601979232403,
-    "status": "post_failed"
-  },
-    "failure_reasons": [
-        "Profile not posted to index. Will reattempt soon when service is fully operational."
-    ]
-}
-```
+
+- Could not post validated profile to the index (internal service issue)
 
 ### [`DELETE /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/delete_nodes__node_id_)
 

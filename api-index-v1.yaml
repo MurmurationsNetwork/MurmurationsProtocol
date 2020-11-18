@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   version: '1.0'
   title: Murmurations Index API
-  description: Draft version of the Index API for the Murmurations Protocol
+  description: DRAFT version of the Index API for the Murmurations Protocol
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
@@ -106,8 +106,8 @@ paths:
                       region: Greater London
                       country: GB
                     linked_schemas:
-                      - demo-v1
-                      - demo-v2
+                      - example_schema-v1
+                      - another_example-v1
         # TODO: Add non-generic error responses (e.g., `Invalid lat (must be number): {lat}`, etc.)
         400:
           $ref: '#/components/responses/BadRequest'
@@ -138,7 +138,7 @@ paths:
         - Node Endpoints
       summary: Get a node's status from the index
       description: |
-        A node can get an update as to the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
+        A node can get an update about the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
         
         The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
       parameters:
@@ -167,6 +167,7 @@ paths:
                       profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                       status: "validated"
                       last_validated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 posted:
                   value:
                     data:
@@ -182,7 +183,7 @@ paths:
                       profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                       status: "validation_failed"
                       failure_reasons:
-                        - "Could not read from profile_url: {profile_url}"
+                        - "Could not read from profile_url: https://node.site/optional-subdirectory/node-profile.json"
                 validation_failed_with_schema:
                   value:
                     data:
@@ -198,7 +199,7 @@ paths:
                       profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                       status: "validation_failed"
                       failure_reasons:
-                        - "Could not read from schema: {schema}"
+                        - "Could not read from schema: example_schema-v1"
                 post_failed:
                   value:
                     data:
@@ -322,8 +323,8 @@ components:
             enum:
               - received
               - validated
-              - validation_failed
               - posted
+              - validation_failed
               - post_failed
           last_validated:
             type: number
@@ -361,19 +362,19 @@ components:
     last_validated:
       name: last_validated
       in: query
-      description: Unix timestamp when node was last validated by index
+      description: Unix timestamp in seconds when node was last validated by index
       schema:
         type: integer
     lat:
       name: lat
       in: query
-      description: geolocation lat coordinate
+      description: geolocation latitude coordinate
       schema:
         type: number
     lon:
       name: lon
       in: query
-      description: geolocation lon coordinate
+      description: geolocation longitude coordinate
       schema:
         type: number
     range:
