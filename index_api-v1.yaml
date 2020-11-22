@@ -211,8 +211,6 @@ paths:
                       profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
                       status: 'post_failed'
                       last_validated: 1601979232403
-                      errors:
-                        message: 'Profile not posted to index. Will reattempt soon when service is fully operational.'
         404:
           description: The node_id could not be found.
           content:
