@@ -74,6 +74,8 @@ paths:
         - A distance in kilometers (_"25km"_) or miles (_"15mi"_)) from a specific geolocation (`lat`, `lon`, `range`)
         - By city/town/village/etc, state/province/county/etc. and/or country. (`locality`, `region`, `country`)
         
+        Query results can be paginated using the `page` and `page_size` parameters.
+        
         Aggregators will eventually be required to authenticate themselves with a JWT to access this endpoint.
       parameters:
         - $ref: '#/components/parameters/schema'
@@ -84,6 +86,8 @@ paths:
         - $ref: '#/components/parameters/locality'
         - $ref: '#/components/parameters/region'
         - $ref: '#/components/parameters/country'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/page_size'
       responses:
         200:
           description: OK
@@ -401,6 +405,18 @@ components:
       description: two-letter country code
       schema:
         type: string
+    page:
+      name: page
+      in: query
+      description: page number in paginated results
+      schema:
+        type: integer
+    page_size:
+      name: page_size
+      in: query
+      description: page size for paginated results
+      schema:
+        type: integer
   responses:
     BadRequest:
       description: The request is missing a required parameter.
