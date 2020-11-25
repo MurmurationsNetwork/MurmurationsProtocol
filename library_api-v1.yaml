@@ -37,7 +37,7 @@ paths:
                   - name: "keywords-v1"
                     definition:
                       title: "Descriptive Keywords"
-                      description: "The most common jeywords used to describe the entity"
+                      description: "The most common keywords used to describe the entity"
                       type: "array"
                       items:
                           type: "string"
