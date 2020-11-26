@@ -1,16 +1,11 @@
 # Murmurations Library API
 
-> :construction: PROPOSED API BASE URL
->
-> https://library.murmurations.network/v1/{endpoint}
-
 The purpose of the Library API is to:
 
-1. replicate the collection of fields and schemas so that they are stored in another location (i.e., removes the GitHub library repo as a single point of failure), and ideally very close (from a networking point of view) to the index and node UIs that are accessing them, and
+1. replicate the collection of fields and schemas so that they are stored in at least one more location (i.e., removes the GitHub library repo as a single point of failure), and ideally very close (from a networking point of view) to the index and Murmurations profile generators (MPGs) that are accessing them (via a CDN), and
+2. provide a list of schemas and fields along with their version numbers (to find the latest version of a schema) and other metadata that will be useful for presenting them to users creating node profiles in the MPG.
 
-2. provide a list of schemas and fields along with their version numbers (to find the latest version of a schema) and other metadata that will be useful for presenting them in the node UI.
-
-The service running the Library API will regularly synchronize with the GitHub library repo to ensure it is up-to-date with the list of fields and schemas on the master branch. It will respond to requests from the index and node UIs for schemas and field definitions so that they can validate profiles, and so that the node UI can build a form to create a profile for a node.
+The service running the Library API will regularly synchronize with the GitHub library repo to ensure it is up-to-date with the list of fields and schemas on the master branch. It will respond to requests from the index and MPGs for schemas and field definitions so that they can validate profiles, and so that the MPG can build forms to create profiles for a node.
 
 ## Raw Data Endpoints
 
@@ -25,17 +20,21 @@ And the `name` field referenced in the above schema can be accessed at:
 The library service will mimic this functionality by serving these schemas and fields from the following URLs over HTTPS, for example:
 
 ```
-https://library.murmurations.network/schemas/demo-v1.json
-https://library.murmurations.network/fields/name-v1.json
+https://cdn.murmurations.network/schemas/demo-v1.json
+https://cdn.murmurations.network/fields/name-v1.json
 ```
 
 > :construction: NAMING STRUCTURE
 >
 > We need to determine if the raw schemas/fields and API should/can be served from the same base URL or if they ought to be different (e.g., library.murm... and cdn.murm...).
 > 
-> Adding `v1` into the higher level namespace (see API URL at beginning of this document)is probably not necessary either since the schemas and fields already have versioning built into their individual namespace (e.g., `demo-v1`, `name-v1`).
+> Adding `v1` into the higher level namespace (see proposed API URL in the next section) is probably not necessary either since the schemas and fields already have versioning built into their individual namespace (e.g., `demo-v1`, `name-v1`).
 
 ## Index & Node UI Endpoints
+
+> :construction: PROPOSED API BASE URL
+>
+> https://library.murmurations.network/v1/{endpoint}
 
 ### `GET /schemas`
 
@@ -57,9 +56,9 @@ https://library.murmurations.network/fields/name-v1.json
     {
       "title": "Demo Schema",
       "description": "A demo schema that is to be used only for testing purposes.",
-      "version": 1,
       "name": "demo-v1",
-      "url": "http://schema.site/link-about-org-or-schema/index.html"
+      "version": 1,
+      "url": "http://schema-creator.site/page-about/schema.html"
     }
   ]
 }
@@ -71,7 +70,7 @@ https://library.murmurations.network/fields/name-v1.json
 - `name` is the filename (without the `.json` extension) of the schema as stored in the library
 - `url` is a link to a web page where one can learn more about the schema from its creators. The web page should include information about the schema's purpose, a CHANGELOG describing changes made between versions and any other relevant information that could be useful to the node operator who is considering to use the schema.
 
-All of the information above is pulled from the schema as it is recorded in the library, either from its JSON Schema-related contents (`title` & `description`) or from its `metadata.schema` (`version`, `name`, `url`):
+All of the information above is pulled from the schema as it is recorded in the library, either from its JSON Schema-related contents (`title` & `description`) or from its `metadata.schema` (`name`, `version`, `url`):
 
 ```json
 {
@@ -134,21 +133,27 @@ All of the information above is pulled from the schema as it is recorded in the 
 - JSON array of field names and their definitions
 
 ```json
-[
-  {
-    "name": "mission-v1",
-    "definition": {
+{
+  "data": [
+    {
       "title": "Mission Statement",
       "description": "A short statement of why the entity exists, what its overall goal is: what kind of product or service it provides, its primary customers or market, and its geographical region of operation.",
       "type": "string",
       "minLength": 1,
       "maxLength": 1000,
-      "context": "https://en.wikipedia.org/wiki/Mission_statement"
-}
-  },
-  {
-    "name": "keywords-v1",
-    "definition": {
+      "metadata": {
+        "creator": {
+          "name": "Murmurations Network",
+          "url": "https://murmurations.network"
+        },
+        "field": {
+          "name": "mission-v1",
+          "version": 1
+        },
+        "context": "https://en.wikipedia.org/wiki/Mission_statement"
+      }
+    },
+    {
       "title": "Descriptive Keywords",
       "description": "The most common keywords used to describe the entity",
       "type": "array",
@@ -160,8 +165,19 @@ All of the information above is pulled from the schema as it is recorded in the 
       "minItems": 1,
       "maxItems": 50,
       "uniqueItems": true,
-      "context": "https://schema.org/keywords"
+      "metadata": {
+        "creator": {
+          "name": "Murmurations Network",
+          "url": "https://murmurations.network"
+        },
+        "field": {
+          "name": "keywords-v1",
+          "version": 1
+        },
+        "context": "https://schema.org/keywords"
+      }
     }
-  }
-]
+  ]
+}
+
 ```
