@@ -24,11 +24,6 @@ https://cdn.murmurations.network/schemas/demo-v1.json
 https://cdn.murmurations.network/fields/name-v1.json
 ```
 
-> :construction: NAMING STRUCTURE
->
-> We need to determine if the raw schemas/fields and API should/can be served from the same base URL or if they ought to be different (e.g., library.murm... and cdn.murm...).
-> 
-> Adding `v1` into the higher level namespace (see proposed API URL in the next section) is probably not necessary either since the schemas and fields already have versioning built into their individual namespace (e.g., `demo-v1`, `name-v1`).
 
 ## Index & Node UI Endpoints
 
@@ -75,7 +70,7 @@ All of the information above is pulled from the schema as it is recorded in the 
 ```json
 {
   "$schema": "https://json-schema.org/draft-04/schema#",
-  "id": "https://raw.githubusercontent.com/MurmurationsNetwork/MurmurationsLibrary/master/schemas/demo-v1.json",
+  "id": "https://cdn.murmurations.network/schemas/demo-v1.json",
   "title": "Demo Schema",
   "description": "A demo schema that is to be used only for testing purposes.",
   "type": "object",
@@ -150,7 +145,7 @@ All of the information above is pulled from the schema as it is recorded in the 
           "name": "mission-v1",
           "version": 1
         },
-        "context": "https://en.wikipedia.org/wiki/Mission_statement"
+        "context": ["https://en.wikipedia.org/wiki/Mission_statement"]
       }
     },
     {
@@ -174,7 +169,40 @@ All of the information above is pulled from the schema as it is recorded in the 
           "name": "keywords-v1",
           "version": 1
         },
-        "context": "https://schema.org/keywords"
+        "context": ["https://schema.org/keywords"]
+      }
+    },
+    {
+      "title": "Geolocation Coordinates",
+      "description": "The geo-coordinates (latitude & longitude) of the primary location of the entity",
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "lon": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        }
+      },
+      "required": ["lat", "lon"],
+      "metadata": {
+        "creator": {
+          "name": "Murmurations Network",
+          "url": "https://murmurations.network"
+        },
+        "field": {
+          "name": "geolocation-v1",
+          "version": 1
+        },
+        "context": [
+          "https://schema.org/latitude",
+          "https://schema.org/longitude",
+          "https://schema.org/GeoCoordinates"
+        ]
       }
     }
   ]
