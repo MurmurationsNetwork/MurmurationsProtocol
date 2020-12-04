@@ -24,7 +24,6 @@ https://cdn.murmurations.network/schemas/demo-v1.json
 https://cdn.murmurations.network/fields/name-v1.json
 ```
 
-
 ## Index & Node UI Endpoints
 
 > :construction: PROPOSED API BASE URL
@@ -94,11 +93,7 @@ All of the information above is pulled from the schema as it is recorded in the 
       "$ref": "../fields/keywords-v1.json"
     }
   },
-  "required": [
-    "linked_schemas",
-    "name",
-    "url"
-  ],
+  "required": ["linked_schemas", "name", "url"],
   "metadata": {
     "creator": {
       "name": "Murmurations Network",
@@ -115,13 +110,17 @@ All of the information above is pulled from the schema as it is recorded in the 
 
 ### `GET /fields`
 
+> :memo: **FUTURE RELEASE**
+>
+> This endpoint will be added in a later release because it is only really needed for schema creation. Node operators will be pulling through the schemas, which will then automatically pull the needed fields.
+
 #### Input
 
 - A standard GET request with no additional parameters
 
 > :construction: OPTIMIZATION WITH PARAMETERS
 >
-> When the list of fields starts to become large, we can add parameters for searching by field name, fields included in a specific schema, date/time last updated, etc.
+> When the list of fields starts to become large, we can add parameters for searching by field name, schemas that include a specific field, date/time last updated, etc.
 
 #### Output
 
@@ -207,5 +206,4 @@ All of the information above is pulled from the schema as it is recorded in the 
     }
   ]
 }
-
 ```
