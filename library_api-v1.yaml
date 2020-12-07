@@ -8,54 +8,53 @@ servers:
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/MurmurationsNetwork/LibraryAPI/1.0
 paths:
-  /fields:
-    get:
-      summary: Get a list of fields
-      description: |
-        Indices and node UIs will need the list of fields in the library in order to validate profiles, and node UIs will need them to build input forms. This endpoint simply returns all of the fields available in the library.
-        
-        The examples below do not include a full list of properties that might be returned, but they highlight the main properties to expect in field objects.
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/GetFieldsResponse'
-              example:
-                data:
-                  - name: "mission-v1"
-                    definition:
-                      title: "Mission Statement"
-                      description: "A short statement of why the entity exists, what its overall goal is: what kind of product or service it provides, its primary customers or market, and its geographical region of operation."
-                      type: "string"
-                      maxLength: 1000
-                      context: "https://en.wikipedia.org/wiki/Mission_statement"
-                  - name: "keywords-v1"
-                    definition:
-                      title: "Descriptive Keywords"
-                      description: "The most common keywords used to describe the entity"
-                      type: "array"
-                      items:
-                          type: "string"
-                      minItems: 1
-                      maxItems: 50
-                      uniqueItems: true
-                      context: "https://schema.org/keywords"
-        429:
-          $ref: '#/components/responses/TooManyRequests'
-        500: 
-          $ref: '#/components/responses/ServerError'
+  # TODO - future release
+  # /fields:
+  #   get:
+  #     summary: Get a list of fields
+  #     description: |
+  #       Indices and node UIs will need the list of fields in the library in order to validate profiles, and node UIs will need them to build input forms. This endpoint simply returns all of the fields available in the library.
+
+  #       The examples below do not include a full list of properties that might be returned, but they highlight the main properties to expect in field objects.
+  #     responses:
+  #       200:
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 data:
+  #                   $ref: '#/components/schemas/GetFieldsResponse'
+  #             example:
+  #               data:
+  #                 - name: "mission-v1"
+  #                   definition:
+  #                     title: "Mission Statement"
+  #                     description: "A short statement of why the entity exists, what its overall goal is: what kind of product or service it provides, its primary customers or market, and its geographical region of operation."
+  #                     type: "string"
+  #                     maxLength: 1000
+  #                     context: "https://en.wikipedia.org/wiki/Mission_statement"
+  #                 - name: "keywords-v1"
+  #                   definition:
+  #                     title: "Descriptive Keywords"
+  #                     description: "The most common keywords used to describe the entity"
+  #                     type: "array"
+  #                     items:
+  #                         type: "string"
+  #                     minItems: 1
+  #                     maxItems: 50
+  #                     uniqueItems: true
+  #                     context: "https://schema.org/keywords"
+  #       429:
+  #         $ref: '#/components/responses/TooManyRequests'
+  #       500:
+  #         $ref: '#/components/responses/ServerError'
   /schemas:
     get:
       summary: Get a list of schemas
       description: |
-        Indices and node UIs will need the list of schemas in the library in order to validate profiles, and node UIs will need them to build input forms. This endpoint simply returns all of the schemas available in the library.
-        
-        The example below does not include a full list of properties that might be returned, but it highlights the main properties to expect in a schema object.
+        Indices and node UIs will need the list of schemas in the library in order to validate profiles, and node UIs will need them to build input forms and present schemas to users. This endpoint simply returns all of the schemas available in the library.
       responses:
         200:
           description: OK
@@ -68,89 +67,67 @@ paths:
                     $ref: '#/components/schemas/GetSchemasResponse'
               example:
                 data:
-                  - name: "demo-v1.json"
-                    id: "9FB93DC4C2556F7579AC2F1900DDA5ABD67905D3DA7293D89F90F01BF8188075"
-                    definition:
-                      $schema: "https://json-schema.org/draft-04/schema#"
-                      id: "https://raw.githubusercontent.com/MurmurationsNetwork/MurmurationsLibrary/master/"
-                      title: "Demo Schema"
-                      description: "A demo schema that is to be used only for testing purposes."
-                      type: "object"
-                      properties:
-                        profileUrl:
-                          "$ref": "fields/profileurl-v1.json"
-                        linkedSchemas:
-                          "$ref": "fields/linkedschemas-v1.json"
-                        name:
-                          "$ref": "fields/name-v1.json"
-                        url:
-                          "$ref": "fields/url-v1.json"
-                      required:
-                        - profileUrl
-                        - linkedSchemas
-                        - name
-                        - url
-                      metadata:
-                        owner:
-                          name: "Mumurmations Network"
-                          url: "https://murmurations.network"
+                  - title: 'Demo Schema'
+                    description: 'A demo schema that is to be used only for testing purposes.'
+                    name: 'demo-v1.json'
+                    version: 1
+                    url: 'http://schema-creator.site/page-about/schema.html'
         429:
           $ref: '#/components/responses/TooManyRequests'
-        500: 
+        500:
           $ref: '#/components/responses/ServerError'
 components:
   schemas:
-    GetFieldsResponse:
-      type: array
-      items:
-        type: object
-        properties:
-          name:
-            type: string
-          definition:
-            type: object
-            properties:
-              title:
-                type: string
-              description:
-                type: string
-              type:
-                type: string
+    # TODO - future release
+    # GetFieldsResponse:
+    #   type: array
+    #   items:
+    #     type: object
+    #     properties:
+    #       name:
+    #         type: string
+    #       definition:
+    #         type: object
+    #         properties:
+    #           title:
+    #             type: string
+    #           description:
+    #             type: string
+    #           type:
+    #             type: string
     GetSchemasResponse:
-      type: array
-      items:
-        type: object
-        properties:
-          name:
-            type: string
-          id:
-            type: string
-          definition:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
             type: object
             properties:
-              $schema:
-                type: string
-              id:
-                type: string
               title:
                 type: string
               description:
                 type: string
-              type:
+              name:
                 type: string
-              properties:
-                type: object
-                properties:
-                  profileUrl:
-                    type: object
-                  linkedSchemas:
-                    type: object
+              version:
+                type: integer
+              url:
+                type: string
+            required:
+              - title
+              - description
+              - name
+              - version
+              - url
     Error:
       type: object
-      title: Error
       properties:
         message:
           type: string
+      required:
+        - message
   responses:
     TooManyRequests:
       description: The request limit for this resource has been reached for the current rate limit window.

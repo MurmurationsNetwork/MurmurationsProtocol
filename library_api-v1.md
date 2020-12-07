@@ -20,15 +20,15 @@ And the `name` field referenced in the above schema can be accessed at:
 The library service will mimic this functionality by serving these schemas and fields from the following URLs over HTTPS, for example:
 
 ```
-https://cdn.murmurations.network/schemas/demo-v1.json
-https://cdn.murmurations.network/fields/name-v1.json
+https://cdn.murmurations.tech/schemas/demo-v1.json
+https://cdn.murmurations.tech/fields/name-v1.json
 ```
 
 ## Index & Node UI Endpoints
 
-> :construction: PROPOSED API BASE URL
+> :link: API BASE URL
 >
-> https://library.murmurations.network/v1/{endpoint}
+> https://library.murmurations.tech/v1/{endpoint}
 
 ### `GET /schemas`
 
@@ -69,7 +69,7 @@ All of the information above is pulled from the schema as it is recorded in the 
 ```json
 {
   "$schema": "https://json-schema.org/draft-04/schema#",
-  "id": "https://cdn.murmurations.network/schemas/demo-v1.json",
+  "id": "https://cdn.murmurations.tech/schemas/demo-v1.json",
   "title": "Demo Schema",
   "description": "A demo schema that is to be used only for testing purposes.",
   "type": "object",
