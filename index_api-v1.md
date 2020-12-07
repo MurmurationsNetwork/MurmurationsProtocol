@@ -2,7 +2,7 @@
 
 > :link: BASE URL
 >
-> https://index.murmurations.network/v1/{endpoint}
+> https://index.murmurations.tech/v1/{endpoint}
 
 The Index API describes how nodes, using predefined schemas, add, update and delete their data in the index so that aggregators can discover them.
 
@@ -17,7 +17,6 @@ The index will also store additional data to enable aggregators to locate nodes 
 - _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "1 kilometer from my current location" or "60 miles from my home")
 - _Location data_ - town/city, country, etc. for searching based on map location
 - _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., food co-ops: [https://en.wikipedia.org/wiki/Food_cooperative](https://en.wikipedia.org/wiki/Food_cooperative))
-
 
 > :construction: INDEX SYNCING
 >
@@ -37,10 +36,7 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 >
 > ```json
 > {
->   "linkedSchemas": [
->     "demo-v1",
->     "demo-v2"
->   ]
+>   "linkedSchemas": ["demo-v1", "demo-v2"]
 > }
 > ```
 >
@@ -49,8 +45,8 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 #### Input
 
 - Profile that validates to a referenced schema (or list of schemas), available at a publicly accessible URL
-    - The profile must be available at the `profile_url` or it can't be recorded by the index
-    - The profile must include one or more `linked_schemas` (unique schema name(s) within a namespace) against which the profile must be validated
+  - The profile must be available at the `profile_url` or it can't be recorded by the index
+  - The profile must include one or more `linked_schemas` (unique schema name(s) within a namespace) against which the profile must be validated
 
 #### Output
 
@@ -101,7 +97,7 @@ Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their p
 #### Input
 
 - the `node_id` of the profile that is currently in the index
-    - The profile must no longer be available at the `profile_url` (i.e., should return a `404 Not Found` error when accessing the URL) or it will not be removed from the index
+  - The profile must no longer be available at the `profile_url` (i.e., should return a `404 Not Found` error when accessing the URL) or it will not be removed from the index
 
 #### Output
 
@@ -138,8 +134,8 @@ It is envisioned that other search parameters will be added to this endpoint as 
 #### Output
 
 - Array of nodes with:
-    - `profile_url`
-    - `last_validated` (in seconds)
-    - `geolocation` - an object containing `lat` & `lon`
-    - `location` - an object containing `locality`, `region` & `country`
-    - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
+  - `profile_url`
+  - `last_validated` (in seconds)
+  - `geolocation` - an object containing `lat` & `lon`
+  - `location` - an object containing `locality`, `region` & `country`
+  - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
