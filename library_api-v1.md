@@ -60,8 +60,8 @@ https://cdn.murmurations.tech/fields/name-v1.json
 
 - `title` is the same as defined in the schema
 - `description` is the same as defined in the schema
-- `version` is an integer and must match the version number (`v1`, `v2`, etc.) in the filename (`name`) of the schema
 - `name` is the filename (without the `.json` extension) of the schema as stored in the library
+- `version` is an integer and must match the version number (`v1`, `v2`, etc.) in the filename (`name`) of the schema
 - `url` is a link to a web page where one can learn more about the schema from its creators. The web page should include information about the schema's purpose, a CHANGELOG describing changes made between versions and any other relevant information that could be useful to the node operator who is considering to use the schema.
 
 All of the information above is pulled from the schema as it is recorded in the library, either from its JSON Schema-related contents (`title` & `description`) or from its `metadata.schema` (`name`, `version`, `url`):

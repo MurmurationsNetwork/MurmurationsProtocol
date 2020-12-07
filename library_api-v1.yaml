@@ -54,7 +54,7 @@ paths:
     get:
       summary: Get a list of schemas
       description: |
-        Indices and node UIs will need the list of schemas in the library in order to validate profiles, and node UIs will need them to build input forms and present schemas to users. This endpoint simply returns all of the schemas available in the library.
+        Indices and Murmurations profile generators (MPGs) will need the list of schemas in the library in order to validate profiles, and MPGs will need them to build input forms and present schemas to users. This endpoint simply returns summary information for all of the schemas available in the library.
       responses:
         200:
           description: OK
