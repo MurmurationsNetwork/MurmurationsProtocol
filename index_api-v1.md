@@ -64,7 +64,7 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 
 The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
 
-This endpoint enables the Node UI to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
+This endpoint enables a Murmurations profile generator to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
 
 #### Input
 
