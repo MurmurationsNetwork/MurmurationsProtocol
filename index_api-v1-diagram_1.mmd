@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Node UI
+    participant Node
+    participant Index
+    participant Validator
+    participant Elasticsearch
+    participant Library
+
+    Node UI->>Node: Post profile to profile_url
+    Node UI->>+Index: Submit profile_url (POST /nodes)
+    Index->>Index: Add node record to DB and <br> create node_id (hash of profile_url)
+    Note over Index: status: received
+    Index->>-Node UI: Confirm node recorded in DB by returning node_id
+    Index-x+Validator: node:created
+    Validator->>Node: Check if profile at profile_url
+    alt check failed
+    Node-->>Validator: Profile not found or node unreachable
+    Note over Index: status: validation_failed
+    else check success
+    Node-->>Validator: Return JSON profile data
+    end
+    Validator->>Library: Get schema(s) & fields
+    Library-->>Validator: Return schema(s) & fields
+    Validator->>Validator: Validate profile to schema(s) & fields
+    alt validate failed
+    Validator-xIndex: node:validation_failed
+    Note over Index: status: validation_failed
+    else validate success
+    Validator-x-Index: node:validated
+    Index->>Index: Set last_validated (Unix timestamp) and <br> profile_hash (hash of JSON profile data) in DB
+    Note over Index: status: validated
+    end
+    Index->>Elasticsearch: Post data to elasticsearch
+    alt post failed
+    Note over Elasticsearch: No response
+    Note over Index: status: post_failed
+    else post success
+    Elasticsearch-->>Index: Return confirmation
+    Note over Index: status: posted
+    end
+    Node UI->>+Index: Poll for status
+    Index->>Index: Get status from node record
+    Index->>-Node UI: Return profile_url, node_id, lastChecked, status
