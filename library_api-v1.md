@@ -30,7 +30,7 @@ https://cdn.murmurations.tech/fields/name-v1.json
 >
 > https://library.murmurations.tech/v1/{endpoint}
 
-### `GET /schemas`
+### [`GET /schemas`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/LibraryAPI/1.0#/default/get_schemas)
 
 #### Input
 
@@ -52,7 +52,7 @@ https://cdn.murmurations.tech/fields/name-v1.json
       "description": "A demo schema that is to be used only for testing purposes.",
       "name": "demo-v1",
       "version": 1,
-      "url": "http://schema-creator.site/page-about/schema.html"
+      "url": "https://murmurations.network/schemas/demo.html"
     }
   ]
 }

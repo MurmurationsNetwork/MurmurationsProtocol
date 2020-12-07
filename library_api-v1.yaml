@@ -71,7 +71,7 @@ paths:
                     description: 'A demo schema that is to be used only for testing purposes.'
                     name: 'demo-v1.json'
                     version: 1
-                    url: 'http://schema-creator.site/page-about/schema.html'
+                    url: 'https://murmurations.network/schemas/demo.html'
         429:
           $ref: '#/components/responses/TooManyRequests'
         500:
