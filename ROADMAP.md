@@ -6,21 +6,25 @@
   - **DONE** - Define the library structure
   - **DONE** - Define JSON Schema validation of fields and schemas
   - **IN PROGRESS** - Document the protocol, APIs & DevOps
+  - **IN PROGRESS** - Implement production environment for Index, Library & Profile Generator
 - Rebuild Index service
   - **DONE** - Draft REST API for Index service
-  - **IN PROGRESS** - Write service in Go
-  - Define and write tests for failure, validation & concurrency scenarios
+  - **DONE** - Write service in Go
 - Build Library service (sync with library git repo to serve schemas and fields directly to Index and Node UI)
-  - **IN PROGRESS** - Define REST API for Library service
-  - Write service in Go
-  - Define and write tests for failure, validation & concurrency scenarios
+  - **DONE** - Define REST API for Library service
+  - **DONE** - Write service in Go
 - Rebuild Node UI
-  - **IN PROGRESS** - Use JS/HTML/CSS to enable wrapping in CMS plug-ins (using React for prototype)
-  - **IN PROGRESS** - Leverage JSON Forms to generate forms from schemas
-- Rebuild demo Aggregators (map, directory, RSS feed)
-  - Adapt apps to consume new schema format
+  - **DONE** - Leverage JSON Forms to generate forms from schemas
+  - **IN PROGRESS** - Implement Profile Generator to enable users to create/update/delete node profiles
 
 ## Release 2
 
+- Rebuild demo Aggregators (map, directory, RSS feed)
+  - Adapt apps to consume new schema format
+- Rebuild WordPress plugin
+  - Wrap JSON Forms React app
 - Index service
   - Require authentication for aggregators
+  - Define and write tests for failure, validation & concurrency scenarios
+- Library service
+  - Define and write tests for failure, validation & concurrency scenarios
