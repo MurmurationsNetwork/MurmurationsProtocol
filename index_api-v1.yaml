@@ -243,9 +243,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                message: 'Profile still exists for node_id: {node_id}'
-                status: 400
+              examples:
+                ProfileStillExists:
+                  value:
+                    message: 'Profile still exists at {profile_url} for node_id {node_id}'
+                    status: 400
+                ErrorContactingNode:
+                  value:
+                    message: 'Error when trying to reach {profile_url} to delete node_id {node_id}'
+                    status: 400
+                OtherStatusCode:
+                  value:
+                    message: 'Node at {profile_url} returned status code {status_code}'
+                    status: 400
         404:
           description: The node_id could not be found.
           content:
