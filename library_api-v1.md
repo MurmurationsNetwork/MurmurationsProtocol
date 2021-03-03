@@ -9,26 +9,23 @@ The service running the Library API will regularly synchronize with the GitHub l
 
 ## Raw Data Endpoints
 
-Schemas and fields can be downloaded directly from the GitHub library repo by using GitHub's `raw.githubusercontent.com` CDN. For example, the demo schema can be accessed at:
+Schemas and fields can be downloaded directly from the Murmurations CDN. For example, the Test Schema can be accessed at:
 
-`https://raw.githubusercontent.com/MurmurationsNetwork/MurmurationsLibrary/master/schemas/demo-v1.json`
+`https://test-cdn.murmurations.network/schemas/test_schema-v1.json`
 
-And the `name` field referenced in the above schema can be accessed at:
+And the Name field referenced in the above schema can be accessed at:
 
-`https://raw.githubusercontent.com/MurmurationsNetwork/MurmurationsLibrary/master/fields/name-v1.json`
-
-The library service will mimic this functionality by serving these schemas and fields from the following URLs over HTTPS, for example:
-
-```
-https://cdn.murmurations.tech/schemas/demo-v1.json
-https://cdn.murmurations.tech/fields/name-v1.json
-```
+`https://test-cdn.murmurations.network/fields/name-v1.json`
 
 ## Index & Node UI Endpoints
 
 > :link: API BASE URL
 >
-> https://library.murmurations.tech/v1/{endpoint}
+> _Test Environment_  
+> https://test-library.murmurations.network/v1/{endpoint}
+>
+> _Production Environment_  
+> https://library.murmurations.network/v1/{endpoint}
 
 ### [`GET /schemas`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/LibraryAPI/1.0#/default/get_schemas)
 
@@ -48,11 +45,11 @@ https://cdn.murmurations.tech/fields/name-v1.json
 {
   "data": [
     {
-      "title": "Demo Schema",
-      "description": "A demo schema that is to be used only for testing purposes.",
-      "name": "demo-v1",
+      "title": "Test Schema",
+      "description": "Just for testing - Select this schema to see your profile show up straight away on the Test map.",
+      "name": "test_schema-v1",
       "version": 1,
-      "url": "https://murmurations.network/schemas/demo.html"
+      "url": "https://murmurations.network/schemas/test_schema"
     }
   ]
 }
@@ -69,9 +66,9 @@ All of the information above is pulled from the schema as it is recorded in the 
 ```json
 {
   "$schema": "https://json-schema.org/draft-04/schema#",
-  "id": "https://cdn.murmurations.tech/schemas/demo-v1.json",
-  "title": "Demo Schema",
-  "description": "A demo schema that is to be used only for testing purposes.",
+  "id": "https://cdn.murmurations.network/schemas/test_schema-v1.json",
+  "title": "Test Schema",
+  "description": "Just for testing - Select this schema to see your profile show up straight away on the Test map.",
   "type": "object",
   "properties": {
     "linked_schemas": {
@@ -80,29 +77,21 @@ All of the information above is pulled from the schema as it is recorded in the 
     "name": {
       "$ref": "../fields/name-v1.json"
     },
-    "url": {
-      "$ref": "../fields/url-v1.json"
-    },
-    "mission": {
-      "$ref": "../fields/mission-v1.json"
-    },
     "geolocation": {
       "$ref": "../fields/geolocation-v1.json"
-    },
-    "keywords": {
-      "$ref": "../fields/keywords-v1.json"
     }
   },
-  "required": ["linked_schemas", "name", "url"],
+  "required": ["linked_schemas", "name", "geolocation"],
   "metadata": {
     "creator": {
       "name": "Murmurations Network",
-      "url": "https://murmurations.network"
+      "url": "https://murmurations.network/"
     },
     "schema": {
-      "name": "demo-v1",
+      "name": "test_schema-v1",
       "version": 1,
-      "url": "https://murmurations.network/schemas/demo.html"
+      "purpose": "A test schema to present profiles on the test map.",
+      "url": "https://murmurations.network/schemas/test_schema"
     }
   }
 }

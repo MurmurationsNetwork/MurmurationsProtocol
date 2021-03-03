@@ -5,8 +5,8 @@
 - Further design and document the Murmurations Protocol
   - **DONE** - Define the library structure
   - **DONE** - Define JSON Schema validation of fields and schemas
-  - **IN PROGRESS** - Document the protocol, APIs & DevOps
-  - **IN PROGRESS** - Implement production environment for Index, Library & Profile Generator
+  - **DONE** - Document the protocol, APIs & DevOps
+  - **DONE** - Implement production environment for Index, Library & Profile Generator
 - Rebuild Index service
   - **DONE** - Draft REST API for Index service
   - **DONE** - Write service in Go
@@ -15,12 +15,12 @@
   - **DONE** - Write service in Go
 - Rebuild Node UI
   - **DONE** - Leverage JSON Forms to generate forms from schemas
-  - **IN PROGRESS** - Implement Profile Generator to enable users to create/update/delete node profiles
+  - **DONE** - Implement Profile Generator to enable users to create/update/delete node profiles
 
 ## Release 2
 
 - Rebuild demo Aggregators (map, directory, RSS feed)
-  - Adapt apps to consume new schema format
+  - **IN PROGRESS** - Adapt apps to consume new schema format
 - Rebuild WordPress plugin
   - Wrap JSON Forms React app
 - Index service

@@ -4,13 +4,23 @@ info:
   title: Murmurations Index API
   description: DRAFT version of the Index API for the Murmurations Protocol
 servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/MurmurationsNetwork/IndexAPI/1.0
+  - description: Murmurations Testing Platform
+    url: https://test-index.murmurations.network/v1
 tags:
+  - name: Common Endpoints
   - name: Node Endpoints
   - name: Aggregator Endpoints
 paths:
+  /ping:
+    get:
+      tags:
+        - Common Endpoints
+      summary: Ping the index
+      description: |
+        Check if the index is live
+      responses:
+        200:
+          description: OK
   /nodes:
     post:
       tags:
@@ -21,7 +31,7 @@ paths:
 
         Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}.json`. For example:
 
-        `https://library.site/schemas/example_schema-v1.json`
+        `https://test-cdn.murmurations.network/schemas/test_schema-v1.json`
       requestBody:
         required: true
         content:
