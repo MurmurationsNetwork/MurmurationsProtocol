@@ -80,7 +80,7 @@ paths:
         Aggregators can search for nodes based on any of the following parameters:
 
         - A specific schema (`schema`)
-        - When the node was last validated by the index (`last_validated`)
+        - When the node was last validated by the index (`last_updated`)
         - A distance in kilometers (_"25km"_) or miles (_"15mi"_)) from a specific geolocation (`lat`, `lon`, `range`)
         - By city/town/village/etc, state/province/county/etc. and/or country. (`locality`, `region`, `country`)
 
@@ -89,7 +89,7 @@ paths:
         Aggregators will eventually be required to authenticate themselves with a JWT to access this endpoint.
       parameters:
         - $ref: "#/components/parameters/schema"
-        - $ref: "#/components/parameters/last_validated"
+        - $ref: "#/components/parameters/last_updated"
         - $ref: "#/components/parameters/lat"
         - $ref: "#/components/parameters/lon"
         - $ref: "#/components/parameters/range"
@@ -113,7 +113,7 @@ paths:
                   value:
                     data:
                       - profile_url: "https://node.site/optional-subdirectory/node-profile.json"
-                        last_validated: 1601979232403
+                        last_updated: 1601979232403
                         geolocation:
                           lat: 51.509865
                           lon: -0.118092
@@ -176,7 +176,7 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                       status: "validated"
-                      last_validated: 1601979232403
+                      last_updated: 1601979232403
                       profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 posted:
                   value:
@@ -184,7 +184,7 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                       status: "posted"
-                      last_validated: 1601979232403
+                      last_updated: 1601979232403
                       profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 validation_failed_no_profile_url:
                   value:
@@ -216,7 +216,7 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                       status: "post_failed"
-                      last_validated: 1601979232403
+                      last_updated: 1601979232403
                 NodeNotFoundInIndex:
                   value:
                     message: "Could not find node_id: {node_id}"
@@ -292,12 +292,12 @@ components:
         type: object
         required:
           - profile_url
-          - last_validated
+          - last_updated
           - linked_schemas
         properties:
           profile_url:
             type: string
-          last_validated:
+          last_updated:
             type: number
           linked_schemas:
             type: array
@@ -338,7 +338,7 @@ components:
             - posted
             - validation_failed
             - post_failed
-        last_validated:
+        last_updated:
           type: number
         profile_hash:
           type: string
@@ -371,8 +371,8 @@ components:
       required: false
       schema:
         type: string
-    last_validated:
-      name: last_validated
+    last_updated:
+      name: last_updated
       in: query
       description: Unix timestamp in seconds when node was last validated by index
       schema:

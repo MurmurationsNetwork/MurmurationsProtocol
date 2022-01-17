@@ -24,7 +24,7 @@ The index will also store additional data to enable aggregators to locate nodes 
 
 > :construction: INDEX SYNCING
 >
-> A `profile_hash` is for future planning, and will also be stored for each node profile so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile (the entire JSON object containing all node profile data) stored at the `profile_url` that was submitted by the node. Nodes can compare `node_id`s (the unique hash of a `profile_url`) and then `profile_hash`es between themselves. They will also store a Unix timestamp (`last_validated`) of when they last validated the profile at the `profile_url` and created the `profile_hash` for each `node_id`. The index with the oldest timestamp should download the profile from the `profile_url` and regenerate the `profile_hash`. This is just a rough idea of index syncing; it will need to be thought through in more detail, including thinking about edge cases.
+> A `profile_hash` is for future planning, and will also be stored for each node profile so that multiple indices can synchronize their lists of nodes. It will be a hash of the profile (the entire JSON object containing all node profile data) stored at the `profile_url` that was submitted by the node. Nodes can compare `node_id`s (the unique hash of a `profile_url`) and then `profile_hash`es between themselves. They will also store a Unix timestamp (`last_updated`) of when they last validated the profile at the `profile_url` and created the `profile_hash` for each `node_id`. The index with the oldest timestamp should download the profile from the `profile_url` and regenerate the `profile_hash`. This is just a rough idea of index syncing; it will need to be thought through in more detail, including thinking about edge cases.
 
 ## Node Endpoints
 
@@ -131,7 +131,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 #### Input
 
 - `schema` - unique schema name (only allow a single value per search)
-- `last_validated` - Unix timestamp (in seconds)
+- `last_updated` - Unix timestamp (in seconds)
 - `geolocation` - `lat`, `lon` & `range`
 - `location` - `locality`, `region`, `country`
 
@@ -139,7 +139,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 
 - Array of nodes with:
   - `profile_url`
-  - `last_validated` (in seconds)
+  - `last_updated` (in seconds)
   - `geolocation` - an object containing `lat` & `lon`
   - `location` - an object containing `locality`, `region` & `country`
   - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
