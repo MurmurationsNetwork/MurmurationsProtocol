@@ -117,10 +117,9 @@ paths:
                         geolocation:
                           lat: 51.509865
                           lon: -0.118092
-                        location:
-                          locality: London
-                          region: Greater London
-                          country: GB
+                        locality: London
+                        region: Greater London
+                        country: GB
                         linked_schemas:
                           - example_schema-v1
                           - another_example-v1
@@ -310,15 +309,12 @@ components:
                 type: number
               lon:
                 type: number
-          location:
-            type: object
-            properties:
-              locality:
-                type: string
-              region:
-                type: string
-              country:
-                type: string
+          locality:
+            type: string
+          region:
+            type: string
+          country:
+            type: string
     GetNodeStatusResponse:
       type: object
       required:

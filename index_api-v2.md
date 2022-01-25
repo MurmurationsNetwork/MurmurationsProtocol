@@ -1,5 +1,7 @@
 # Murmurations Index API
 
+<!-- TODO: change the endpoint URL to `v2` -->
+
 > :link: BASE URL
 >
 > _Test Environment_  
@@ -8,19 +10,21 @@
 > _Production Environment_  
 > https://index.murmurations.network/v1/{endpoint}
 
-The Index API describes how nodes, using predefined schemas, add, update and delete their data in the index so that aggregators can discover them.
+The Index API enables nodes, using predefined schemas, to add, update and delete their data in the index so that aggregators can discover them.
 
 Schemas define collections of data fields that nodes can fill in to share information about themselves. Think of a schema as a form template and each instance of a completed form as a profile.
 
-Nodes store their profiles on their website and then request them to be referenced in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the node's website (`profile_url`) and the name(s) of the schema(s) that profile is/are based upon and must be validated against (`linked_schemas`).
+Nodes store their profiles on their website or through a dedicated profile host and then request them to be referenced in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the web (`profile_url`) and the name(s) of the schema(s) that profile is/are based upon and must be validated against (`linked_schemas`).
 
 Using these two pieces of information, aggregators can then search the index for nodes with profiles that match specific schemas they want to use to create maps and directories, and the index returns a list of URLs (`profile_url`s) for the matched nodes' profiles. Aggregators then download from each node it's profile data for use in their apps.
 
-The index will also store additional data to enable aggregators to locate nodes based on other information in addition to their associated schemas. This additional information will include, for example:
+The index also stores additional data to enable aggregators to locate nodes based on other information in addition to their associated schemas. This additional information includes, for example:
 
 - _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "1 kilometer from my current location" or "60 miles from my home")
 - _Location data_ - town/city, country, etc. for searching based on map location
+<!-- TODO - add this back in if/when a solution is determined
 - _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., food co-ops: [https://en.wikipedia.org/wiki/Food_cooperative](https://en.wikipedia.org/wiki/Food_cooperative))
+-->
 
 > :construction: INDEX SYNCING
 >
@@ -28,7 +32,7 @@ The index will also store additional data to enable aggregators to locate nodes 
 
 ## Node Endpoints
 
-### [`POST /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/post_nodes)
+### [`POST /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_nodes)
 
 Node operators will call the `POST /nodes` endpoint to add their nodes to the index both when they first create a profile and to indicate when they have made changes to that profile.
 
@@ -40,7 +44,7 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 >
 > ```json
 > {
->   "linkedSchemas": ["demo-v1", "demo-v2"]
+>   "linkedSchemas": ["test_schema-v2.1.0", "demo-v1"]
 > }
 > ```
 >
@@ -64,7 +68,7 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 
 ![Add Node Profile to Index](index_api-v1-diagram_1.png)
 
-### [`GET /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/get_nodes__node_id_)
+### [`GET /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/get_nodes__node_id_)
 
 The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
 
@@ -76,7 +80,7 @@ This endpoint enables a Murmurations profile generator to get and present an upd
 
 #### Output
 
-Detailed response examples can be seen in the [Open API specification](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/get_nodes__node_id_) under the _Responses_ section for `200 OK` response code.
+Detailed response examples can be seen in the [Open API specification](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/get_nodes__node_id_) under the _Responses_ section for `200 OK` response code.
 
 ##### Success
 
@@ -94,7 +98,7 @@ Detailed response examples can be seen in the [Open API specification](https://a
 
 - Could not post validated profile to the index (internal service issue)
 
-### [`DELETE /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Node%20Endpoints/delete_nodes__node_id_)
+### [`DELETE /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/delete_nodes__node_id_)
 
 Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their profile from the index when they no longer want it listed.
 
@@ -112,28 +116,36 @@ Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their p
 ##### Error
 
 - Return a `404 Not Found` error when the `node_id` does not exist in the index
-- Return a `400 Bad Request` error when the profile is still available at its `profile_url` on the node's website
+- Return a `400 Bad Request` error when the profile is still available at its `profile_url` on the web
 
 ## Aggregator Endpoints
 
-### [`GET /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/1.0#/Aggregator%20Endpoints/get_nodes)
+### [`GET /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Aggregator%20Endpoints/get_nodes)
 
+<!-- TODO - add this back if/when it happens
 > :lock: The `GET /nodes` endpoint will eventually require an API key in order to prevent unauthorized harvesting of data from the index.
+ -->
 
 Aggregators can search for nodes based on the schemas nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc.
 
 It is envisioned that other search parameters will be added to this endpoint as they are defined and deemed useful for aggregator searching.
 
+<!-- TODO - add this back in if/when a solution is determined
 > :construction: SEARCH BY ORGANIZATION TYPE
 >
 > The ability to search by type of organization will eventually be offered, but the methodology for defining and recording the organization type still needs to be determined. ([see this issue for updates](https://github.com/MurmurationsNetwork/MurmurationsProtocol/issues/6))
+-->
 
-#### Input
+#### Input Parameters
 
-- `schema` - unique schema name (only allow a single value per search)
+- `schema` - unique schema name (only allows a single value per search)
 - `last_updated` - Unix timestamp (in seconds)
-- `geolocation` - `lat`, `lon` & `range`
-- `location` - `locality`, `region`, `country`
+- `lat` - latitude geopoint coordinate
+- `lon` - longitude geopoing coordinate
+- `range` - search distance from geopoint
+- `locality` - town, city, etc.
+- `region` - state, province, county, etc.
+- `country` - ISO 3166 two-letter country code
 
 #### Output
 
@@ -141,5 +153,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
   - `profile_url`
   - `last_updated` (in seconds)
   - `geolocation` - an object containing `lat` & `lon`
-  - `location` - an object containing `locality`, `region` & `country`
+  - `locality`
+  - `region`
+  - `country`
   - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
