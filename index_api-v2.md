@@ -22,6 +22,7 @@ The index also stores additional data to enable aggregators to locate nodes base
 
 - _Geolocation data_ - latitude/longitude of primary location of entity - enables searching for nodes within a geographical range (i.e., "1 kilometer from my current location" or "60 miles from my home")
 - _Location data_ - town/city, country, etc. for searching based on map location
+- _Tags_ - nodes can include an array of strings ('tags') that describe the node (e.g., 'restaurant', 'pizza', 'beer', 'calzones')
 <!-- TODO - add this back in if/when a solution is determined
 - _Entity type_ - Wikipedia/Wikidata URL that best describes the organization type - enables searching for specific types of entities (e.g., food co-ops: [https://en.wikipedia.org/wiki/Food_cooperative](https://en.wikipedia.org/wiki/Food_cooperative))
 -->
@@ -126,7 +127,7 @@ Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their p
 > :lock: The `GET /nodes` endpoint will eventually require an API key in order to prevent unauthorized harvesting of data from the index.
  -->
 
-Aggregators can search for nodes based on the schemas nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc. Searching for deleted nodes is also possible so that aggregators can keep their records updated as nodes remove themselves from the index.
+Aggregators can search for nodes based on the schemas nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc. Searching for deleted nodes is also possible so that aggregators can keep their records updated as nodes remove themselves from the index. Finally, nodes can associate tags to their profiles to enable searching by specific keywords.
 
 It is envisioned that other search parameters will be added to this endpoint as they are defined and deemed useful for aggregator searching.
 
@@ -146,6 +147,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 - `locality` - town, city, etc.
 - `region` - state, province, county, etc.
 - `country` - ISO 3166 two-letter country code
+- `tags` - comma-separated list of strings to match
 
 #### Output
 
@@ -157,4 +159,5 @@ It is envisioned that other search parameters will be added to this endpoint as 
   - `region`
   - `country`
   - `status`
+  - `tags`
   - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
