@@ -70,7 +70,7 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 
 ### [`GET /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/get_nodes__node_id_)
 
-The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
+The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted`, `post_failed` or `deleted`. The node will only be discoverable in the index when it has the status of `posted` or `deleted`.
 
 This endpoint enables a Murmurations profile generator to get and present an update to the node operator as to the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
 
@@ -84,7 +84,7 @@ Detailed response examples can be seen in the [Open API specification](https://a
 
 ##### Success
 
-- Confirmation of status (e.g., `received`, `validated` or `posted`)
+- Confirmation of status (e.g., `received`, `validated`, `posted` or `deleted`)
 
 ##### Error
 
@@ -126,7 +126,7 @@ Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their p
 > :lock: The `GET /nodes` endpoint will eventually require an API key in order to prevent unauthorized harvesting of data from the index.
  -->
 
-Aggregators can search for nodes based on the schemas nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc.
+Aggregators can search for nodes based on the schemas nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc. Searching for deleted nodes is also possible so that aggregators can keep their records updated as nodes remove themselves from the index.
 
 It is envisioned that other search parameters will be added to this endpoint as they are defined and deemed useful for aggregator searching.
 
@@ -156,4 +156,5 @@ It is envisioned that other search parameters will be added to this endpoint as 
   - `locality`
   - `region`
   - `country`
+  - `status`
   - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
