@@ -147,7 +147,10 @@ It is envisioned that other search parameters will be added to this endpoint as 
 - `locality` - town, city, etc.
 - `region` - state, province, county, etc.
 - `country` - ISO 3166 two-letter country code
+- `status` - posted or deleted
 - `tags` - comma-separated list of strings to match
+- `tags_filter` - AND/OR switch
+- `tags_exact` - boolean for exact or fuzzy matching
 
 #### Output
 
