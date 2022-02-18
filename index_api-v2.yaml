@@ -5,7 +5,7 @@ info:
   description: API schema for the Murmurations Index
 servers:
   - description: Murmurations Testing Platform
-    url: https://test-index.murmurations.network/v1
+    url: https://test-index.murmurations.network/v2
 tags:
   - name: Common Endpoints
   - name: Node Endpoints

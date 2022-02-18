@@ -1,14 +1,12 @@
 # Murmurations Index API
 
-<!-- TODO: change the endpoint URL to `v2` -->
-
 > :link: BASE URL
 >
 > _Test Environment_  
-> https://test-index.murmurations.network/v1/{endpoint}
+> https://test-index.murmurations.network2/{endpoint}
 >
 > _Production Environment_  
-> https://index.murmurations.network/v1/{endpoint}
+> https://index.murmurations.network/v2/{endpoint}
 
 The Index API enables nodes, using predefined schemas, to add, update and delete their data in the index so that aggregators can discover them.
 
