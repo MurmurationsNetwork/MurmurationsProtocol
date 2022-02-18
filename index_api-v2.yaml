@@ -373,7 +373,6 @@ components:
       type: object
       required:
         - message
-        - status
       properties:
         message:
           type: string
