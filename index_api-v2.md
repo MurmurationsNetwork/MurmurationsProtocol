@@ -31,6 +31,19 @@ The index also stores additional data to enable aggregators to locate nodes base
 
 ## Node Endpoints
 
+### [`POST /validate`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_validate)
+
+Node operators can test the validity of a profile to one or more schemas before posting the profile to their website and submitting the `profile_url` to the index.
+
+#### Input
+
+- A valid JSON schema instance (the profile).
+
+#### Output
+
+- 200 OK response (if profile validates to the schema(s))
+- 400 Bad Request response (if profile does not validate) along with one or more failure reasons
+
 ### [`POST /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_nodes)
 
 Node operators will call the `POST /nodes` endpoint to add their nodes to the index both when they first create a profile and to indicate when they have made changes to that profile.

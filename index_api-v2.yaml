@@ -21,6 +21,51 @@ paths:
       responses:
         200:
           description: OK
+  /validate:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Validate a node profile
+      description: A node operator may want to validate the node profile will be accepted by the index before posting it to the node's website. This endpoint enables such a validation check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateNode"
+            example:
+              linked_schemas:
+                - "demo_schema-v1"
+              name: "Some Org"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ValidationResponse"
+              examples:
+                validation_error:
+                  value:
+                    failure_reasons:
+                      - "test_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
+                      - "test_schema-v1.geolocation.lon: Invalid type. Expected: number, given: string"
+                    status: "validation_failed"
+                schema_not_found:
+                  value:
+                    failure_reasons:
+                      - "Failed to validate against schemas: Error when trying to read from schema https://test-cdn.murmurations.network/schemas/test_schema-ver0.json: Could not read schema from HTTP, response status is 404 Not Found"
+                    status: "validation_failed"
+                missing_linked_schemas:
+                  value:
+                    failure_reasons:
+                      - "Could not read linked_schemas"
+                    status: "validation_failed"
   /nodes:
     post:
       tags:
@@ -382,6 +427,24 @@ paths:
           $ref: "#/components/responses/ServerError"
 components:
   schemas:
+    ValidateNode:
+      type: object
+      required:
+        - linked_schemas
+      properties:
+        linked_schemas:
+          type: array
+          items:
+            type: string
+    ValidationResponse:
+      type: object
+      properties:
+        failure_reasons:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
     PostNodeRequest:
       type: object
       required:
