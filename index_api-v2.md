@@ -149,6 +149,7 @@ It is envisioned that other search parameters will be added to this endpoint as 
 - `tags` - comma-separated list of strings to match
 - `tags_filter` - AND/OR switch
 - `tags_exact` - boolean for exact or fuzzy matching
+- `primary_url` - the canonical URL that identifies a node
 
 #### Output
 
@@ -161,4 +162,5 @@ It is envisioned that other search parameters will be added to this endpoint as 
   - `country`
   - `status`
   - `tags`
+  - `primary_url`
   - `linked_schemas` - an array containing a list of all schemas the node profile was validated against
