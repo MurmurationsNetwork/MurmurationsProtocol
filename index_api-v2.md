@@ -67,6 +67,18 @@ They need to store their profile at a publicly accessible URL (`profile_url`), a
 
 ![Add Node Profile to Index](index_api-v1-diagram_1.png)
 
+### [`POST /nodes-sync`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_nodes_sync)
+
+This endpoint is identical to the `POST /nodes-sync` endpoint above but it responds with an immediate success or failure status, so it is useful for posting nodes in an asynchronous call to the index.
+
+#### Input
+
+- Same as for the `POST /nodes` endpoint above
+
+#### Output
+
+- Same as for the `GET /nodes/{node_id}` endpoint below
+
 ### [`GET /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/get_nodes__node_id_)
 
 The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted`, `post_failed` or `deleted`. The node will only be discoverable in the index when it has the status of `posted` or `deleted`.
