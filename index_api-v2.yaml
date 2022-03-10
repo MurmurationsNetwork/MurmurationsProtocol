@@ -190,21 +190,12 @@ paths:
                 NoResults:
                   value:
                     message: "No items found matching given criteria."
-        # TODO: Add non-generic error responses (e.g., `Invalid lat (must be number): {lat}`, etc.)
         400:
           $ref: "#/components/responses/BadRequest"
-        # TODO: Add authentication/authorization errors when JWT is introduced
-        # 401:
-        #   $ref: '#/components/responses/Unauthorized'
-        # 403:
-        #   $ref: '#/components/responses/Forbidden'
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
           $ref: "#/components/responses/ServerError"
-      # TODO: Add JWT authentication
-      # security:
-      #   - jwt: []
   /nodes-sync:
     post:
       tags:
@@ -696,25 +687,6 @@ components:
               value:
                 message: Invalid JSON body.
                 status: 400
-    # TODO: Add authentication/authorization errors when JWT is introduced
-    # Unauthorized:
-    #   description: There was an issue with the authentication data for the request.
-    #   content:
-    #     application/json:
-    #       schema:
-    #         $ref: '#/components/schemas/Error'
-    #       example:
-    #         message: Could not authenticate you.
-    #         status: 401
-    # Forbidden:
-    #   description: User does not have permission to access the resource.
-    #   content:
-    #     application/json:
-    #       schema:
-    #         $ref: '#/components/schemas/Error'
-    #       example:
-    #         message: Permission denied.
-    #         status: 403
     TooManyRequests:
       description: The request limit for this resource has been reached for the current rate limit window.
       content:
@@ -733,9 +705,3 @@ components:
           example:
             message: Internal server error triggered.
             status: 500
-  # TODO: Add JWT authentication
-  # securitySchemes:
-  #   jwt:
-  #     type: http
-  #     scheme: bearer
-  #     bearerFormat: JWT
