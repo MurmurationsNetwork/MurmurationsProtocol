@@ -169,7 +169,9 @@ It is envisioned that other search parameters will be added to this endpoint as 
 
 #### Input Parameters
 
-- `schema` - unique schema name (only allows a single value per search)
+- `schema` - unique schema name
+  - only allows a single value per search
+  - can be wildcarded (`my_schema-v1.0` (returns 1.0.x), `my_schema-v1` (returns 1.x.x), `my_schema-v` (return x.x.x))
 - `last_updated` - Unix timestamp (in seconds)
 - `lat` - latitude geopoint coordinate
 - `lon` - longitude geopoing coordinate
