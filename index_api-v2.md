@@ -3,7 +3,7 @@
 > :link: BASE URL
 >
 > _Test Environment_  
-> https://test-index.murmurations.network2/{endpoint}
+> https://test-index.murmurations.network/v2/{endpoint}
 >
 > _Production Environment_  
 > https://index.murmurations.network/v2/{endpoint}
@@ -12,9 +12,15 @@ The Index API enables nodes, using predefined schemas, to add, update and delete
 
 Schemas define collections of data fields that nodes can fill in to share information about themselves. Think of a schema as a form template and each instance of a completed form as a profile.
 
-Nodes store their profiles on their website or through a dedicated profile host and then request them to be referenced in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not actually store the entire profile; it is only required to store the URL of the profile's location on the web (`profile_url`) and the name(s) of the schema(s) that profile is/are based upon and must be validated against (`linked_schemas`).
+Nodes store their profiles on their website or through a dedicated profile host and then request them to be referenced in the index. The index validates that the profile meets the requirements of its associated schema(s). The index does not store the entire profile, only certain fields that can then be used by aggregators to find profiles that match various search criteria.
 
-Using these two pieces of information, aggregators can then search the index for nodes with profiles that match specific schemas they want to use to create maps and directories, and the index returns a list of URLs (`profile_url`s) for the matched nodes' profiles. Aggregators then download from each node it's profile data for use in their apps.
+Information stored by the index includes, for example:
+
+- `linked_schemas` - the names of the schemas that the profile has been built and validated against
+- `profile_url` - the URL where the profile is stored
+- `primary_url` - the website address of the node
+
+Using the information, aggregators can then search the index for nodes with profiles that match specific schemas they want to use to create maps and directories, and the index returns a list of URLs (`profile_url`s) for the matched nodes' profiles. Aggregators then download from each node it's profile data for use in their apps.
 
 The index also stores additional data to enable aggregators to locate nodes based on other information in addition to their associated schemas. This additional information includes, for example:
 
@@ -33,16 +39,17 @@ The index also stores additional data to enable aggregators to locate nodes base
 
 ### [`POST /validate`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_validate)
 
-Node operators can test the validity of a profile to one or more schemas before posting the profile to their website and submitting the `profile_url` to the index.
+Node operators can test the validity of a profile against one or more schemas before posting the profile to their website and submitting the `profile_url` to the index.
 
 #### Input
 
-- A valid JSON schema instance (the profile).
+- The profile JSON to validate, including an array of one or more `linked_schemas` to validate against.
 
 #### Output
 
-- 200 OK response (if profile validates to the schema(s))
-- 400 Bad Request response (if profile does not validate) along with one or more failure reasons
+- 200 OK response
+  - if profile validates to the schema(s), returns `success`
+  - if profile does not validate, return `failure` along with an array of failure reasons
 
 ### [`POST /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_nodes)
 
@@ -150,7 +157,7 @@ Node operators will use the `DELETE /nodes/{node_id}` endpoint to remove their p
 > :lock: The `GET /nodes` endpoint will eventually require an API key in order to prevent unauthorized harvesting of data from the index.
  -->
 
-Aggregators can search for nodes based on the schemas nodes use, when the nodes were last validated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc. Searching for deleted nodes is also possible so that aggregators can keep their records updated as nodes remove themselves from the index. Finally, nodes can associate tags to their profiles to enable searching by specific keywords.
+Aggregators can search for nodes based on the schemas nodes use, when the nodes were last updated by the index (i.e., for recent changes to node profiles), and by geolocating nodes within a certain range (e.g., _10km_ or _6mi_) from a specific location or finding them based on the town/city, country, etc. Searching for deleted nodes is also possible so that aggregators can keep their records updated as nodes remove themselves from the index. Finally, nodes can associate tags to their profiles to enable searching by specific keywords, and nodes can be queried based on their `primary_url` value.
 
 It is envisioned that other search parameters will be added to this endpoint as they are defined and deemed useful for aggregator searching.
 
