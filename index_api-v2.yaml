@@ -70,6 +70,8 @@ paths:
                     failure_reasons:
                       - "Could not read linked_schemas"
                     status: "validation_failed"
+        400:
+          $ref: "#/components/responses/BadRequest"
   /nodes:
     post:
       tags:
@@ -680,14 +682,20 @@ components:
         type: integer
   responses:
     BadRequest:
-      description: The request is missing a required parameter.
+      description: The request is missing a required parameter or is malformed.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
-          example:
-            message: <named> parameter is missing.
-            status: 400
+          examples:
+            missing_parameter:
+              value:
+                message: <named> parameter is missing.
+                status: 400
+            malformed_request:
+              value:
+                message: Invalid JSON body.
+                status: 400
     # TODO: Add authentication/authorization errors when JWT is introduced
     # Unauthorized:
     #   description: There was an issue with the authentication data for the request.
