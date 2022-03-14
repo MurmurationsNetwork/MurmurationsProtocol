@@ -650,6 +650,9 @@ components:
       description: an AND/OR filter for multiple tags
       schema:
         type: string
+        enum:
+          - and
+          - or
     tags_exact:
       name: tags_exact
       in: query
