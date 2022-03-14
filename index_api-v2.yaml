@@ -16,8 +16,7 @@ paths:
       tags:
         - Common Endpoints
       summary: Ping the index
-      description: |
-        Check if the index is live
+      description: Check if the index is live
       responses:
         200:
           description: OK
@@ -68,7 +67,7 @@ paths:
                     failure_reasons:
                       - "Could not read linked_schemas"
         400:
-          $ref: "#/components/responses/BadRequest"
+          $ref: "#/components/responses/MalformedRequest"
   /nodes:
     post:
       tags:
@@ -674,20 +673,24 @@ components:
         type: integer
   responses:
     BadRequest:
-      description: The request is missing a required parameter or is malformed.
+      description: The request is missing a required parameter.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
-          examples:
-            missing_parameter:
-              value:
-                message: <named> parameter is missing.
-                status: 400
-            malformed_request:
-              value:
-                message: Invalid JSON body.
-                status: 400
+          example:
+            value:
+              message: <named> parameter is missing.
+              status: 400
+    MalformedRequest:
+      description: The request body is malformed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: Invalid JSON body.
+            status: 400
     TooManyRequests:
       description: The request limit for this resource has been reached for the current rate limit window.
       content:
