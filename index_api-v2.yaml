@@ -98,34 +98,29 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PostNodeResponse"
-                    example:
-                      data:
-                        node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                  - allOf:
-                      - $ref: "#/components/schemas/Error"
-                      - example:
-                          message: "The profile_url parameter is missing."
-                          status: 400
-        # 400:
-        #   description: The profile_url is missing.
-        #   content:
-        #     application/json:
-        #       schema:
-        #         $ref: "#/components/schemas/Error"
-        #       examples:
-        #         missing:
-        #           value:
-        #             message: "The profile_url parameter is missing."
-        #             status: 400
-        #         invalid:
-        #           value:
-        #             message: "Invalid JSON body."
-        #             status: 400
+                # Still waiting on a fix to display multiple responses correctly:
+                # https://github.com/swagger-api/swagger-ui/issues/3803
+                # https://github.com/swagger-api/swagger-ui/pull/5530
+                # oneOf:
+                #   - type: object
+                #     properties:
+                #       data:
+                #         $ref: "#/components/schemas/PostNodeResponse"
+                #     example:
+                #       data:
+                #         node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                #   - allOf:
+                #       - $ref: "#/components/schemas/Error"
+                #       - example:
+                #           message: "The profile_url parameter is missing."
+                #           status: 400
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PostNodeResponse"
+              example:
+                data:
+                  node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:
@@ -226,6 +221,12 @@ paths:
           content:
             application/json:
               schema:
+                # Still waiting on a fix to display multiple responses correctly:
+                #   - allOf:
+                #       - $ref: "#/components/schemas/Error"
+                #       - example:
+                #           message: "The profile_url parameter is missing."
+                #           status: 400
                 type: object
                 properties:
                   data:
