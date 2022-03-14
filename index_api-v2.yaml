@@ -36,7 +36,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ValidateNode"
+              $ref: "#/components/schemas/ValidateNodeRequest"
             example:
               linked_schemas:
                 - "demo_schema-v1"
@@ -50,7 +50,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/ValidationResponse"
+                    $ref: "#/components/schemas/ValidateNodeResponse"
               examples:
                 validation_success:
                   value:
@@ -425,7 +425,7 @@ paths:
           $ref: "#/components/responses/ServerError"
 components:
   schemas:
-    ValidateNode:
+    ValidateNodeRequest:
       type: object
       required:
         - linked_schemas
@@ -434,7 +434,7 @@ components:
           type: array
           items:
             type: string
-    ValidationResponse:
+    ValidateNodeResponse:
       type: object
       required:
         - status
