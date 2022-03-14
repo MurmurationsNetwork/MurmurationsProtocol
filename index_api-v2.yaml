@@ -600,7 +600,7 @@ components:
     last_updated:
       name: last_updated
       in: query
-      description: Unix timestamp in seconds when node was last validated by index
+      description: Unix timestamp in seconds when node was last updated by index
       schema:
         type: integer
     lat:
