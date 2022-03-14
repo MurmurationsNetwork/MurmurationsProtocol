@@ -20,6 +20,11 @@ paths:
       responses:
         200:
           description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: pong!
   /validate:
     post:
       tags:
