@@ -632,9 +632,12 @@ components:
     status:
       name: status
       in: query
-      description: status of node (posted or deleted)
+      description: status of node
       schema:
         type: string
+        enum:
+          - posted
+          - deleted
     tags:
       name: tags
       in: query
