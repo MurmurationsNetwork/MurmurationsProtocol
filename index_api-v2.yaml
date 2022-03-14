@@ -57,20 +57,20 @@ paths:
                     status: validation_succeeded
                 validation_error:
                   value:
-                    status: validation_failed
                     failure_reasons:
                       - "test_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
                       - "test_schema-v1.geolocation.lon: Invalid type. Expected: number, given: string"
+                    status: validation_failed
                 schema_not_found:
                   value:
-                    status: validation_failed
                     failure_reasons:
-                      - "Failed to validate against schemas: Error when trying to read from schema https://test-cdn.murmurations.network/schemas/test_schema-ver0.json: Could not read schema from HTTP, response status is 404 Not Found"
+                      - "Error when trying to read from schema https://test-cdn.murmurations.network/schemas/test_schema-ver0.json: Could not read schema from HTTP, response status is 404 Not Found"
+                    status: validation_failed
                 missing_linked_schemas:
                   value:
-                    status: validation_failed
                     failure_reasons:
                       - "Could not read linked_schemas"
+                    status: validation_failed
         400:
           $ref: "#/components/responses/MalformedRequest"
   /nodes:
