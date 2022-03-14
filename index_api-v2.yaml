@@ -293,6 +293,8 @@ paths:
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
                       last_updated: 1601979232403
+        400:
+          $ref: "#/components/responses/MalformedRequest"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
