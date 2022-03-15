@@ -232,34 +232,12 @@ paths:
                   data:
                     $ref: "#/components/schemas/PostNodeSyncResponse"
               examples:
-                received:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "received"
-                validated:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validated"
-                      last_updated: 1601979232403
-                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 posted:
                   value:
                     data:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "posted"
-                      last_updated: 1601979232403
-                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
-                deleted:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "deleted"
                       last_updated: 1601979232403
                       profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 validation_failed_no_profile_url:
@@ -286,13 +264,26 @@ paths:
                       status: "validation_failed"
                       failure_reasons:
                         - "Could not read from schema: example_schema-v1"
+                received:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "received"
+                validated:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validated"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 post_failed:
                   value:
                     data:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
-                      last_updated: 1601979232403
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:
@@ -381,7 +372,6 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
-                      last_updated: 1601979232403
                 NodeNotFoundInIndex:
                   value:
                     message: "Could not find node_id: {node_id}"
