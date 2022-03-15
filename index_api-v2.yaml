@@ -284,6 +284,7 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
+                      last_updated: 1601979232403
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:
@@ -372,6 +373,7 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
+                      last_updated: 1601979232403
                 NodeNotFoundInIndex:
                   value:
                     message: "Could not find node_id: {node_id}"
