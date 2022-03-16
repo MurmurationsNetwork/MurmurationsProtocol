@@ -113,7 +113,7 @@ paths:
                       - $ref: "#/components/schemas/Error"
                       - example:
                           message: "The profile_url parameter is missing."
-                          status:
+                          status: 400
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:
