@@ -97,7 +97,9 @@ This endpoint is identical to the `POST /nodes-sync` endpoint above but it respo
 
 #### Output
 
-- Same as for the `GET /nodes/{node_id}` endpoint below
+Detailed response examples can be seen in the [Open API specification](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_nodes_sync) under the _Responses_ section for `200 OK` response code.
+
+Note that the `received`, `validated` and `post_failed` responses will only be returned in very rare circumstances (i.e., unavailability of one or more of the backend services). Expect to only see the `posted` or one of the `validation_failed` responses when posting to this endpoint.
 
 ### [`GET /nodes/{node_id}`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/get_nodes__node_id_)
 
