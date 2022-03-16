@@ -278,6 +278,10 @@ paths:
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
                       last_updated: 1601979232403
+                ProfileUrlMissing:
+                  value:
+                    message: "The profile_url parameter is missing."
+                    status: 400
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:
