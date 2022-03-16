@@ -374,6 +374,7 @@ paths:
                 NodeNotFoundInIndex:
                   value:
                     message: "Could not find node_id: {node_id}"
+                    status: 404
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
