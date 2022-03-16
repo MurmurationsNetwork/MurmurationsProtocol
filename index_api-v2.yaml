@@ -392,13 +392,18 @@ paths:
       responses:
         200:
           description: OK
-        400:
-          description: Profile not deleted from profile_url on node.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DeleteNodeResponse"
               examples:
+                ProfileDeleted:
+                  value:
+                    message: "Removed profile at {profile_url}"
+                    status: 200
                 ProfileStillExists:
                   value:
                     message: "Profile still exists at {profile_url} for node_id {node_id}"
@@ -411,15 +416,12 @@ paths:
                   value:
                     message: "Node at {profile_url} returned status code {status_code}"
                     status: 400
-        404:
-          description: The node_id could not be found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Could not find node_id: {node_id}"
-                status: 404
+                NodeIdNotFound:
+                  value:
+                    message: "Could not find node_id: {node_id}"
+                    status: 404
+        400:
+          $ref: "#/components/responses/BadRequest"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -564,10 +566,21 @@ components:
           type: array
           items:
             type: string
+    DeleteNodeResponse:
+      type: object
+      required:
+        - message
+        - status
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
     Error:
       type: object
       required:
         - message
+        - status
       properties:
         message:
           type: string
