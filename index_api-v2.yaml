@@ -54,23 +54,23 @@ paths:
               examples:
                 validation_success:
                   value:
-                    status: validation_succeeded
+                    status: success
                 validation_error:
                   value:
                     failure_reasons:
                       - "test_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
                       - "test_schema-v1.geolocation.lon: Invalid type. Expected: number, given: string"
-                    status: validation_failed
+                    status: failure
                 schema_not_found:
                   value:
                     failure_reasons:
                       - "Error when trying to read from schema https://test-cdn.murmurations.network/schemas/test_schema-ver0.json: Could not read schema from HTTP, response status is 404 Not Found"
-                    status: validation_failed
+                    status: failure
                 missing_linked_schemas:
                   value:
                     failure_reasons:
                       - "Could not read linked_schemas"
-                    status: validation_failed
+                    status: failure
         400:
           $ref: "#/components/responses/MalformedRequest"
   /nodes:
@@ -113,7 +113,7 @@ paths:
                       - $ref: "#/components/schemas/Error"
                       - example:
                           message: "The profile_url parameter is missing."
-                          status: 400
+                          status:
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:
