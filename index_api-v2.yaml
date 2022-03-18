@@ -114,6 +114,16 @@ paths:
                       - example:
                           message: "The profile_url parameter is missing."
                           status: 400
+                  - allOf:
+                      - $ref: "#/components/schemas/Error"
+                      - example:
+                          message: "Could not find the linked_schemas property."
+                          status: 400
+                  - allOf:
+                      - $ref: "#/components/schemas/Error"
+                      - example:
+                          message: "Could not find node_id: {node_id}"
+                          status: 404
         400:
           $ref: "#/components/responses/MalformedRequest"
         429:

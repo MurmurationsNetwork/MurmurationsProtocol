@@ -48,8 +48,9 @@ Node operators can test the validity of a profile against one or more schemas be
 #### Output
 
 - 200 OK response
-  - if profile validates to the schema(s), returns `success`
-  - if profile does not validate, return `failure` along with an array of failure reasons
+  - if profile validates to the schema(s), returns `200`
+  - if profile does not validate, return `400` or `404` along with an array of failure reasons
+    - in the case of multiple failure reasons (e.g., a `400` and a `404`), the code for the first listed reason is returned
 
 ### [`POST /nodes`](https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0#/Node%20Endpoints/post_nodes)
 
