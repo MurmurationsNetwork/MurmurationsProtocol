@@ -224,12 +224,6 @@ paths:
           content:
             application/json:
               schema:
-                # Still waiting on a fix to display multiple responses correctly:
-                #   - allOf:
-                #       - $ref: "#/components/schemas/Error"
-                #       - example:
-                #           message: "The profile_url parameter is missing."
-                #           status: 400
                 type: object
                 properties:
                   data:
@@ -267,6 +261,14 @@ paths:
                       status: "validation_failed"
                       failure_reasons:
                         - "Could not read from schema: example_schema-v1"
+                validation_failed_no_linked_schemas:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "default-v2.0.0.(root): linked_schemas is required"
                 received:
                   value:
                     data:
@@ -288,6 +290,14 @@ paths:
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
                       last_updated: 1601979232403
+                # Still waiting on a fix to display multiple responses correctly:
+                #   - allOf:
+                #       - $ref: "#/components/schemas/Error"
+                #       - example:
+                #           message: "The profile_url parameter is missing."
+                #           status: 400
+                # As a result this response below does not match
+                # components/schemas/PostNodeSyncResponse
                 ProfileUrlMissing:
                   value:
                     message: "The profile_url parameter is missing."
@@ -374,6 +384,14 @@ paths:
                       status: "validation_failed"
                       failure_reasons:
                         - "Could not read from schema: example_schema-v1"
+                validation_failed_no_linked_schemas:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "default-v2.0.0.(root): linked_schemas is required"
                 post_failed:
                   value:
                     data:
@@ -381,6 +399,14 @@ paths:
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
                       last_updated: 1601979232403
+                # Still waiting on a fix to display multiple responses correctly:
+                #   - allOf:
+                #       - $ref: "#/components/schemas/Error"
+                #       - example:
+                #           message: "Could not find node_id: {node_id}"
+                #           status: 404
+                # As a result this response below does not match
+                # components/schemas/GetNodeStatusResponse
                 NodeNotFoundInIndex:
                   value:
                     message: "Could not find node_id: {node_id}"
