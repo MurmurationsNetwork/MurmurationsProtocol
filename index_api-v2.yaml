@@ -452,6 +452,10 @@ paths:
                   value:
                     message: "Node at {profile_url} returned status code {status_code}"
                     status: 400
+                NodeIdMissing:
+                  value:
+                    message: "The node_id path parameter is missing."
+                    status: 400
                 NodeIdNotFound:
                   value:
                     message: "Could not find node_id: {node_id}"
