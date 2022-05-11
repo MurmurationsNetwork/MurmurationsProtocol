@@ -1,5 +1,7 @@
 # MurmurationsProtocol
 
+_This project is licensed under the terms of the GNU General Public License v3.0_
+
 The Murmurations Protocol enables individuals and organizations (**nodes**) to create **profiles** about themselves in order to easily share information with **aggregators**, who create **schemas** to define the data they need to create maps, directories and content aggregators.
 
 A [**library**](https://github.com/MurmurationsNetwork/MurmurationsLibrary) stores details of the schemas and the **fields** (data points) they are composed of.
