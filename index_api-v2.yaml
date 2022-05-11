@@ -69,7 +69,7 @@ paths:
                 missing_linked_schemas:
                   value:
                     failure_reasons:
-                      - "Could not read linked_schemas"
+                      - "The submitted profile does not contain the linked_schemas property."
                     status: 400
         400:
           $ref: "#/components/responses/MalformedRequest"
