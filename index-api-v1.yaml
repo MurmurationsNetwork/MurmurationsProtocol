@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: '1.0'
+  version: "1.0"
   title: Murmurations Index API
   description: DRAFT version of the Index API for the Murmurations Protocol
 servers:
@@ -37,9 +37,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostNodeRequest'
+              $ref: "#/components/schemas/PostNodeRequest"
             example:
-              profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
+              profile_url: "https://node.site/optional-subdirectory/node-profile.json"
       responses:
         200:
           description: OK
@@ -49,29 +49,29 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/PostNodeResponse'
+                    $ref: "#/components/schemas/PostNodeResponse"
               example:
                 data:
-                  node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
+                  node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
         400:
           description: The profile_url is missing.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               examples:
                 missing:
                   value:
-                    message: 'The profile_url parameter is missing.'
+                    message: "The profile_url parameter is missing."
                     status: 400
                 invalid:
                   value:
-                    message: 'Invalid JSON body.'
+                    message: "Invalid JSON body."
                     status: 400
         429:
-          $ref: '#/components/responses/TooManyRequests'
+          $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
     get:
       tags:
         - Aggregator Endpoints
@@ -88,16 +88,16 @@ paths:
 
         Aggregators will eventually be required to authenticate themselves with a JWT to access this endpoint.
       parameters:
-        - $ref: '#/components/parameters/schema'
-        - $ref: '#/components/parameters/last_validated'
-        - $ref: '#/components/parameters/lat'
-        - $ref: '#/components/parameters/lon'
-        - $ref: '#/components/parameters/range'
-        - $ref: '#/components/parameters/locality'
-        - $ref: '#/components/parameters/region'
-        - $ref: '#/components/parameters/country'
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/page_size'
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/last_validated"
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/lon"
+        - $ref: "#/components/parameters/range"
+        - $ref: "#/components/parameters/locality"
+        - $ref: "#/components/parameters/region"
+        - $ref: "#/components/parameters/country"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/page_size"
       responses:
         200:
           description: OK
@@ -107,10 +107,10 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/GetNodesResponse'
+                    $ref: "#/components/schemas/GetNodesResponse"
               example:
                 data:
-                  - profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
+                  - profile_url: "https://node.site/optional-subdirectory/node-profile.json"
                     last_validated: 1601979232403
                     geolocation:
                       lat: 51.509865
@@ -124,7 +124,7 @@ paths:
                       - another_example-v1
         # TODO: Add non-generic error responses (e.g., `Invalid lat (must be number): {lat}`, etc.)
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         # TODO: Add authentication/authorization errors when JWT is introduced
         # 401:
         #   $ref: '#/components/responses/Unauthorized'
@@ -135,14 +135,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'No items found matching given criteria.'
+                message: "No items found matching given criteria."
                 status: 404
         429:
-          $ref: '#/components/responses/TooManyRequests'
+          $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
       # TODO: Add JWT authentication
       # security:
       #   - jwt: []
@@ -156,7 +156,7 @@ paths:
 
         The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
       parameters:
-        - $ref: '#/components/parameters/node_id'
+        - $ref: "#/components/parameters/node_id"
       responses:
         200:
           description: OK
@@ -166,74 +166,74 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/GetNodeStatusResponse'
+                    $ref: "#/components/schemas/GetNodeStatusResponse"
               examples:
                 received:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'received'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "received"
                 validated:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'validated'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "validated"
                       last_validated: 1601979232403
-                      profile_hash: 'c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf'
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 posted:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'posted'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "posted"
                       last_validated: 1601979232403
-                      profile_hash: 'c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf'
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 validation_failed_no_profile_url:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'validation_failed'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
                       failure_reasons:
-                        - 'Could not read from profile_url: https://node.site/optional-subdirectory/node-profile.json'
+                        - "Could not read from profile_url: https://node.site/optional-subdirectory/node-profile.json"
                 validation_failed_with_schema:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'validation_failed'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
                       failure_reasons:
-                        - 'example_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string'
+                        - "example_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
                 validation_failed_no_schema:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'validation_failed'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
                       failure_reasons:
-                        - 'Could not read from schema: example_schema-v1'
+                        - "Could not read from schema: example_schema-v1"
                 post_failed:
                   value:
                     data:
-                      node_id: 'a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38'
-                      profile_url: 'https://node.site/optional-subdirectory/node-profile.json'
-                      status: 'post_failed'
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://node.site/optional-subdirectory/node-profile.json"
+                      status: "post_failed"
                       last_validated: 1601979232403
         404:
           description: The node_id could not be found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Could not find node_id: {node_id}'
+                message: "Could not find node_id: {node_id}"
                 status: 404
         429:
-          $ref: '#/components/responses/TooManyRequests'
+          $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
     delete:
       tags:
         - Node Endpoints
@@ -243,7 +243,7 @@ paths:
 
         The index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then remove the profile from its records.
       parameters:
-        - $ref: '#/components/parameters/node_id'
+        - $ref: "#/components/parameters/node_id"
       responses:
         200:
           description: OK
@@ -252,33 +252,33 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               examples:
                 ProfileStillExists:
                   value:
-                    message: 'Profile still exists at {profile_url} for node_id {node_id}'
+                    message: "Profile still exists at {profile_url} for node_id {node_id}"
                     status: 400
                 ErrorContactingNode:
                   value:
-                    message: 'Error when trying to reach {profile_url} to delete node_id {node_id}'
+                    message: "Error when trying to reach {profile_url} to delete node_id {node_id}"
                     status: 400
                 OtherStatusCode:
                   value:
-                    message: 'Node at {profile_url} returned status code {status_code}'
+                    message: "Node at {profile_url} returned status code {status_code}"
                     status: 400
         404:
           description: The node_id could not be found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
               example:
-                message: 'Could not find node_id: {node_id}'
+                message: "Could not find node_id: {node_id}"
                 status: 404
         429:
-          $ref: '#/components/responses/TooManyRequests'
+          $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: '#/components/responses/ServerError'
+          $ref: "#/components/responses/ServerError"
 
 components:
   schemas:
@@ -441,7 +441,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             message: <named> parameter is missing.
             status: 400
@@ -469,7 +469,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             message: Rate limit exceeded.
             status: 429
@@ -478,7 +478,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: "#/components/schemas/Error"
           example:
             message: Internal server error triggered.
             status: 500

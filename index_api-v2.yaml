@@ -1,0 +1,770 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: Murmurations Index API
+  description: API schema for the Murmurations Index
+servers:
+  - description: Murmurations Testing Platform
+    url: https://test-index.murmurations.network/v2
+tags:
+  - name: Common Endpoints
+  - name: Node Endpoints
+  - name: Aggregator Endpoints
+paths:
+  /ping:
+    get:
+      tags:
+        - Common Endpoints
+      summary: Ping the index
+      description: Check if the index is live
+      responses:
+        200:
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: pong!
+  /validate:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Validate a node profile
+      description: A node operator may want to validate the node profile will be accepted by the index before posting it to the node's website. This endpoint enables such a validation check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateNodeRequest"
+            example:
+              linked_schemas:
+                - "demo_schema-v1"
+              name: "Some Org"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ValidateNodeResponse"
+              examples:
+                validation_success:
+                  value:
+                    status: 200
+                validation_error:
+                  value:
+                    failure_reasons:
+                      - "test_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
+                      - "test_schema-v1.geolocation.lon: Invalid type. Expected: number, given: string"
+                    status: 400
+                schema_not_found:
+                  value:
+                    failure_reasons:
+                      - "Error when trying to read from schema https://test-cdn.murmurations.network/schemas/test_schema-ver0.json: Could not read schema from HTTP, response status is 404 Not Found"
+                    status: 404
+                missing_linked_schemas:
+                  value:
+                    failure_reasons:
+                      - "The submitted profile does not contain the linked_schemas property."
+                    status: 400
+        400:
+          $ref: "#/components/responses/MalformedRequest"
+  /nodes:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Add a node to the index
+      description: |
+        A node adds its profile to the index by posting the location of its profile (`profile_url`). The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated.
+
+        Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}.json`. For example:
+
+        `https://test-cdn.murmurations.network/schemas/test_schema-v1.json`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostNodeRequest"
+            example:
+              profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                # Still waiting on a fix to display multiple responses correctly:
+                # https://github.com/swagger-api/swagger-ui/issues/3803
+                # https://github.com/swagger-api/swagger-ui/pull/5530
+                oneOf:
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PostNodeResponse"
+                    example:
+                      data:
+                        node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                  - allOf:
+                      - $ref: "#/components/schemas/Error"
+                      - example:
+                          message: "The profile_url parameter is missing."
+                          status: 400
+                  - allOf:
+                      - $ref: "#/components/schemas/Error"
+                      - example:
+                          message: "Could not find the linked_schemas property."
+                          status: 400
+                  - allOf:
+                      - $ref: "#/components/schemas/Error"
+                      - example:
+                          message: "Could not find node_id: {node_id}"
+                          status: 404
+        400:
+          $ref: "#/components/responses/MalformedRequest"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/ServerError"
+    get:
+      tags:
+        - Aggregator Endpoints
+      summary: Search for nodes
+      description: |
+        Aggregators can search for nodes based on any of the following parameters:
+
+        - A specific schema (`schema`)
+        - When the node was last updated by the index (`last_updated`)
+        - A distance in kilometers (_"25km"_) or miles (_"15mi"_)) from a specific geolocation (`lat`, `lon`, `range`)
+        - By city/town/village/etc, state/province/county/etc. and/or country. (`locality`, `region`, `country`)
+        - By node profile status (`posted` or `deleted`)
+        - By tags that describe the node (using an AND/OR filter with fuzzy or exact matching)
+        - By the nodes website address (`primary_url`)
+
+        Query results can be paginated using the `page` and `page_size` parameters.
+
+        Aggregators will eventually be required to authenticate themselves with an API key or JWT (to be determined) to access this endpoint.
+      parameters:
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/last_updated"
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/lon"
+        - $ref: "#/components/parameters/range"
+        - $ref: "#/components/parameters/locality"
+        - $ref: "#/components/parameters/region"
+        - $ref: "#/components/parameters/country"
+        - $ref: "#/components/parameters/status"
+        - $ref: "#/components/parameters/tags"
+        - $ref: "#/components/parameters/tags_filter"
+        - $ref: "#/components/parameters/tags_exact"
+        - $ref: "#/components/parameters/primary_url"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/page_size"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GetNodesResponse"
+              examples:
+                ResultsFound:
+                  value:
+                    data:
+                      - profile_url: "https://www.somenode.org/optional-subdirectory/node-profile.json"
+                        last_updated: 1601979232403
+                        primary_url: "somenode.org"
+                        geolocation:
+                          lat: 51.509865
+                          lon: -0.118092
+                        locality: London
+                        region: Greater London
+                        country: GB
+                        status: posted
+                        tags:
+                          - beer
+                          - pizza
+                        linked_schemas:
+                          - example_schema-v1
+                          - another_example-v1
+                NoResults:
+                  value:
+                    message: "No items found matching given criteria."
+        400:
+          $ref: "#/components/responses/BadRequest"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/ServerError"
+  /nodes-sync:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Add a node to the index with an immediate status response
+      description: |
+        The same as the `POST /nodes` endpoint but with an immediate success or failure status response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostNodeSyncRequest"
+            example:
+              profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PostNodeSyncResponse"
+              examples:
+                posted:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "posted"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                validation_failed_no_profile_url:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "Could not read from profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+                validation_failed_with_schema:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "example_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
+                validation_failed_no_schema:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "Could not read from schema: example_schema-v1"
+                validation_failed_no_linked_schemas:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "default-v2.0.0.(root): linked_schemas is required"
+                received:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "received"
+                validated:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validated"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                post_failed:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "post_failed"
+                      last_updated: 1601979232403
+                # Still waiting on a fix to display multiple responses correctly:
+                #   - allOf:
+                #       - $ref: "#/components/schemas/Error"
+                #       - example:
+                #           message: "The profile_url parameter is missing."
+                #           status: 400
+                # As a result this response below does not match
+                # components/schemas/PostNodeSyncResponse
+                ProfileUrlMissing:
+                  value:
+                    message: "The profile_url parameter is missing."
+                    status: 400
+        400:
+          $ref: "#/components/responses/MalformedRequest"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/ServerError"
+  /nodes/{node_id}:
+    get:
+      tags:
+        - Node Endpoints
+      summary: Get a node's status from the index
+      description: |
+        A node can get an update about the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
+
+        The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
+      parameters:
+        - $ref: "#/components/parameters/node_id"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GetNodeStatusResponse"
+              examples:
+                received:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "received"
+                validated:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validated"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                posted:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "posted"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                deleted:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "deleted"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                validation_failed_no_profile_url:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "Could not read from profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+                validation_failed_with_schema:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "example_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
+                validation_failed_no_schema:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "Could not read from schema: example_schema-v1"
+                validation_failed_no_linked_schemas:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validation_failed"
+                      failure_reasons:
+                        - "default-v2.0.0.(root): linked_schemas is required"
+                post_failed:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "post_failed"
+                      last_updated: 1601979232403
+                # Still waiting on a fix to display multiple responses correctly:
+                #   - allOf:
+                #       - $ref: "#/components/schemas/Error"
+                #       - example:
+                #           message: "Could not find node_id: {node_id}"
+                #           status: 404
+                # As a result this response below does not match
+                # components/schemas/GetNodeStatusResponse
+                NodeNotFoundInIndex:
+                  value:
+                    message: "Could not find node_id: {node_id}"
+                    status: 404
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags:
+        - Node Endpoints
+      summary: Delete a node from the index
+      description: |
+        A node can delete its profile from the index at any time simply by removing the profile from its `profile_url` on its website and then sending this DELETE request to the index.
+
+        The index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then remove the profile from its records.
+      parameters:
+        - $ref: "#/components/parameters/node_id"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/DeleteNodeResponse"
+              examples:
+                ProfileDeleted:
+                  value:
+                    message: "Removed profile at {profile_url}"
+                    status: 200
+                ProfileStillExists:
+                  value:
+                    message: "Profile still exists at {profile_url} for node_id {node_id}"
+                    status: 400
+                ErrorContactingNode:
+                  value:
+                    message: "Error when trying to reach {profile_url} to delete node_id {node_id}"
+                    status: 400
+                OtherStatusCode:
+                  value:
+                    message: "Node at {profile_url} returned status code {status_code}"
+                    status: 400
+                NodeIdMissing:
+                  value:
+                    message: "The node_id path parameter is missing."
+                    status: 400
+                NodeIdNotFound:
+                  value:
+                    message: "Could not find node_id: {node_id}"
+                    status: 404
+        400:
+          $ref: "#/components/responses/BadRequest"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/ServerError"
+components:
+  schemas:
+    ValidateNodeRequest:
+      type: object
+      required:
+        - linked_schemas
+      properties:
+        linked_schemas:
+          type: array
+          items:
+            type: string
+    ValidateNodeResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - validation_succeeded
+            - validation_failed
+        failure_reasons:
+          type: array
+          items:
+            type: string
+    PostNodeRequest:
+      type: object
+      required:
+        - profile_url
+      properties:
+        profile_url:
+          type: string
+    PostNodeResponse:
+      type: object
+      required:
+        - node_id
+      properties:
+        node_id:
+          type: string
+    PostNodeSyncRequest:
+      type: object
+      required:
+        - profile_url
+      properties:
+        profile_url:
+          type: string
+    PostNodeSyncResponse:
+      type: object
+      required:
+        - profile_url
+        - node_id
+        - status
+      properties:
+        profile_url:
+          type: string
+        node_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - received
+            - validated
+            - posted
+            - deleted
+            - validation_failed
+            - post_failed
+        last_updated:
+          type: number
+        profile_hash:
+          type: string
+        failure_reasons:
+          type: array
+          items:
+            type: string
+    GetNodesResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - profile_url
+          - last_updated
+          - linked_schemas
+        properties:
+          profile_url:
+            type: string
+          last_updated:
+            type: number
+          linked_schemas:
+            type: array
+            items:
+              type: string
+          primary_url:
+            type: string
+          geolocation:
+            type: object
+            properties:
+              lat:
+                type: number
+              lon:
+                type: number
+          locality:
+            type: string
+          region:
+            type: string
+          country:
+            type: string
+          status:
+            type: string
+          tags:
+            type: array
+            items:
+              type: string
+    GetNodeStatusResponse:
+      type: object
+      required:
+        - profile_url
+        - node_id
+        - status
+      properties:
+        profile_url:
+          type: string
+        node_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - received
+            - validated
+            - posted
+            - deleted
+            - validation_failed
+            - post_failed
+        last_updated:
+          type: number
+        profile_hash:
+          type: string
+        failure_reasons:
+          type: array
+          items:
+            type: string
+    DeleteNodeResponse:
+      type: object
+      required:
+        - message
+        - status
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
+    Error:
+      type: object
+      required:
+        - message
+        - status
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
+  parameters:
+    node_id:
+      name: node_id
+      in: path
+      description: The ID of the node
+      required: true
+      schema:
+        type: string
+    schema:
+      name: schema
+      in: query
+      description: The name of the schema
+      schema:
+        type: string
+    last_updated:
+      name: last_updated
+      in: query
+      description: Unix timestamp in seconds when node was last updated by index
+      schema:
+        type: integer
+    lat:
+      name: lat
+      in: query
+      description: geolocation latitude coordinate
+      schema:
+        type: number
+    lon:
+      name: lon
+      in: query
+      description: geolocation longitude coordinate
+      schema:
+        type: number
+    range:
+      name: range
+      in: query
+      description: distance from geo-coordinates ("10km" or "6mi")
+      schema:
+        type: string
+    locality:
+      name: locality
+      in: query
+      description: town, city, village, etc.
+      schema:
+        type: string
+    region:
+      name: region
+      in: query
+      description: state, province, county, etc.
+      schema:
+        type: string
+    country:
+      name: country
+      in: query
+      description: two-letter country code
+      schema:
+        type: string
+    status:
+      name: status
+      in: query
+      description: status of node
+      schema:
+        type: string
+        enum:
+          - posted
+          - deleted
+    tags:
+      name: tags
+      in: query
+      description: a comma-separated list that describe the node
+      schema:
+        type: string
+    tags_filter:
+      name: tags_filter
+      in: query
+      description: an AND/OR filter for multiple tags
+      schema:
+        type: string
+        enum:
+          - and
+          - or
+    tags_exact:
+      name: tags_exact
+      in: query
+      description: a toggle for exact or fuzzy matching of tags
+      schema:
+        type: boolean
+    primary_url:
+      name: primary_url
+      in: query
+      description: the canonical URL that identifies a node
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: page number in paginated results
+      schema:
+        type: integer
+    page_size:
+      name: page_size
+      in: query
+      description: page size for paginated results
+      schema:
+        type: integer
+  responses:
+    BadRequest:
+      description: The request is missing a required parameter.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            value:
+              message: <named> parameter is missing.
+              status: 400
+    MalformedRequest:
+      description: The request body is malformed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: Invalid JSON body.
+            status: 400
+    TooManyRequests:
+      description: The request limit for this resource has been reached for the current rate limit window.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: Rate limit exceeded.
+            status: 429
+    ServerError:
+      description: An unknown internal error occurred.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            message: Internal server error triggered.
+            status: 500
