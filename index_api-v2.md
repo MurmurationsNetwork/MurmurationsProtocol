@@ -1,5 +1,9 @@
 # Murmurations Index API
 
+**IMPORTANT**
+
+The Murmurations API docs are now being maintained on our [documentation site](https://docs.murmurations.network/technical/index-api.html).
+
 > :link: BASE URL
 >
 > _Test Environment_  

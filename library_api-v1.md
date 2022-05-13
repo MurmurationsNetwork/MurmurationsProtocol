@@ -1,5 +1,9 @@
 # Murmurations Library API
 
+**IMPORTANT**
+
+The Murmurations API docs are now being maintained on our [documentation site](https://docs.murmurations.network/technical/library-api.html).
+
 The purpose of the Library API is to:
 
 1. replicate the collection of fields and schemas so that they are stored in at least one more location (i.e., removes the GitHub library repo as a single point of failure), and ideally very close (from a networking point of view) to the index and Murmurations profile generators (MPGs) that are accessing them (via a CDN), and

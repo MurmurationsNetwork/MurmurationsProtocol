@@ -5,7 +5,7 @@ info:
   description: DRAFT version of the Index API for the Murmurations Protocol
 servers:
   - description: Murmurations Testing Platform
-    url: https://test-index.murmurations.network/v1
+    url: https://index.murmurations.network/v1
 tags:
   - name: Common Endpoints
   - name: Node Endpoints
