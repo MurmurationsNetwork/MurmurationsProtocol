@@ -194,9 +194,15 @@ paths:
                         linked_schemas:
                           - example_schema-v1
                           - another_example-v1
+                    meta:
+                      number_of_results: 1
+                      total_pages: 1
                 NoResults:
                   value:
-                    message: "No items found matching given criteria."
+                    data: []
+                    meta:
+                      number_of_results: 0
+                      total_pages: 0
         400:
           $ref: "#/components/responses/BadRequest"
         429:
