@@ -79,11 +79,11 @@ paths:
         - Node Endpoints
       summary: Add a node to the index
       description: |
-        A node adds its profile to the index by posting the location of its profile (`profile_url`). The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated.
+        A node adds its profile to the index by posting the location of its profile (`profile_url`). Use this endpoint if you want to send large batches of profiles all at once so they are queued for processing. Each profile's unique `node_id` is returned in the response so you can check their statuses later (see `GET /nodes/{node_id}`).
+        
+        The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated. Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}.json`. For example:
 
-        Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}.json`. For example:
-
-        `https://test-cdn.murmurations.network/schemas/test_schema-v1.json`
+        `https://test-cdn.murmurations.network/schemas/test_schema-v2.0.0.json`
       requestBody:
         required: true
         content:
@@ -215,7 +215,7 @@ paths:
         - Node Endpoints
       summary: Add a node to the index with an immediate status response
       description: |
-        The same as the `POST /nodes` endpoint but with an immediate success or failure status response
+        This endpoint is similar to the `POST /nodes` endpoint but with a near immediate response back from the index to know if the post was successful or not (i.e., if there were errors in the profile that caused its validation to fail). It fits the Web style of sending a request and creating a callback that handles the response with the details of how that request was processed by the index.
       requestBody:
         required: true
         content:
