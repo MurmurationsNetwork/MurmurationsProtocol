@@ -49,17 +49,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - meta
-                properties:
-                  meta:
-                    type: object
-                    required:
-                      - message
-                    properties:
-                      message:
-                        type: string
+                $ref: "#/components/schemas/Validate200"
               example:
                 meta:
                   message: "The submitted profile was validated successfully to its linked schemas."
@@ -68,10 +58,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    $ref: "#/components/schemas/Validate400"
+                $ref: "#/components/schemas/Validate400"
               examples:
                 Missing_Required_Property:
                   value:
@@ -118,10 +105,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    $ref: "#/components/schemas/Validate404"
+                $ref: "#/components/schemas/Validate404"
               examples:
                 Missing_Schema:
                   value:
@@ -143,15 +127,15 @@ paths:
       description: |
         A node adds its profile to the Index by posting the location of its profile (`profile_url`). Use this endpoint if you want to send large batches of profiles all at once so they are queued for processing. Each profile's unique `node_id` is returned in the response so you can check their statuses later (see `GET /nodes/{node_id}`).
         
-        The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated. Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}.json`. For example:
+        The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated. Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}`. For example:
 
-        `https://test-cdn.murmurations.network/schemas/test_schema-v2.0.0.json`
+        `https://test-library.murmurations.network/schemas/test_schema-v2.0.0`
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostNodeRequest"
+              $ref: "#/components/schemas/PostNode"
             example:
               profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
       responses:
@@ -541,52 +525,70 @@ components:
           type: array
           items:
             type: string
+    Validate200:
+      type: object
+      required:
+        - meta
+      properties:
+        meta:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
     Validate400:
-      type: array
-      items:
-        type: object
-        required:
-          - status
-          - title
-          - detail
-        properties:
-          status:
-            type: integer
-          source:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
             type: object
             required:
-              - pointer
+              - status
+              - title
+              - detail
             properties:
-              pointer:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
                 type: string
-          title:
-            type: string
-          detail:
-            type: string
+              detail:
+                type: string
     Validate404:
-      type: array
-      items:
-        type: object
-        required:
-          - status
-          - source
-          - title
-          - detail
-        properties:
-          status:
-            type: integer
-          source:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
             type: object
             required:
-              - pointer
+              - status
+              - source
+              - title
+              - detail
             properties:
-              pointer:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
                 type: string
-          title:
-            type: string
-          detail:
-            type: string
-    PostNodeRequest:
+              detail:
+                type: string
+    PostNode:
       type: object
       required:
         - profile_url
