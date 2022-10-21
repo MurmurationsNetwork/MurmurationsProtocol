@@ -72,7 +72,7 @@ paths:
                       - "The submitted profile does not contain the linked_schemas property."
                     status: 400
         400:
-          $ref: "#/components/responses/MalformedRequest"
+          $ref: "#/components/responses/InvalidJSON"
   /nodes:
     post:
       tags:
@@ -125,11 +125,11 @@ paths:
                           message: "Could not find node_id: {node_id}"
                           status: 404
         400:
-          $ref: "#/components/responses/MalformedRequest"
+          $ref: "#/components/responses/InvalidJSON"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: "#/components/responses/ServerError"
+          $ref: "#/components/responses/InternalServerError"
     get:
       tags:
         - Aggregator Endpoints
@@ -208,7 +208,7 @@ paths:
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: "#/components/responses/ServerError"
+          $ref: "#/components/responses/InternalServerError"
   /nodes-sync:
     post:
       tags:
@@ -309,11 +309,11 @@ paths:
                     message: "The profile_url parameter is missing."
                     status: 400
         400:
-          $ref: "#/components/responses/MalformedRequest"
+          $ref: "#/components/responses/InvalidJSON"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: "#/components/responses/ServerError"
+          $ref: "#/components/responses/InternalServerError"
   /nodes/{node_id}:
     get:
       tags:
@@ -420,7 +420,7 @@ paths:
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: "#/components/responses/ServerError"
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Node Endpoints
@@ -471,7 +471,7 @@ paths:
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
-          $ref: "#/components/responses/ServerError"
+          $ref: "#/components/responses/InternalServerError"
 components:
   schemas:
     ValidateNodeRequest:
@@ -625,13 +625,16 @@ components:
     Error:
       type: object
       required:
-        - message
         - status
+        - title
+        - detail
       properties:
-        message:
-          type: string
         status:
           type: integer
+        title:
+          type: string
+        detail:
+          type: string
   parameters:
     node_id:
       name: node_id
@@ -745,17 +748,29 @@ components:
             $ref: "#/components/schemas/Error"
           example:
             value:
-              message: <named> parameter is missing.
               status: 400
-    MalformedRequest:
-      description: The request body is malformed.
+              title: "..."
+              message: "<named> parameter is missing."
+    InvalidJSON:
+      description: The JSON document in the request body is malformed.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            message: Invalid JSON body.
             status: 400
+            title: "Invalid JSON"
+            message: "The body of the JSON document submitted is malformed."
+    Gone:
+      description: The target resource is no longer available.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 410
+            title: "Gone"
+            detail: "The v1 API has been deprecated. Please use the v2 API instead: https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0"
     TooManyRequests:
       description: The request limit for this resource has been reached for the current rate limit window.
       content:
@@ -763,14 +778,16 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            message: Rate limit exceeded.
             status: 429
-    ServerError:
+            title: "Too Many Requests"
+            detail: "You have exceeded the maximum number of requests per minute/hour. Please try again later. For more information see: https://docs.murmurations.network/developers/rate-limits.html"
+    InternalServerError:
       description: An unknown internal error occurred.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
           example:
-            message: Internal server error triggered.
             status: 500
+            title: "Internal Server Error"
+            detail: "An internal server error was triggered and has been logged. Please try your request again later."
