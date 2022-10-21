@@ -107,6 +107,12 @@ paths:
                           pointer: "/longitude"
                         title: "Invalid Amount"
                         detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                JSON_Error:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "JSON Error"
+                        detail: "The JSON document submitted could not be parsed."
         404:
           description: Not Found
           content:
