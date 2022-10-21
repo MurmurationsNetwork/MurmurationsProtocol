@@ -15,8 +15,8 @@ paths:
     get:
       tags:
         - Common Endpoints
-      summary: Ping the index
-      description: Check if the index is live
+      summary: Ping the Index
+      description: This is an endpoint for checking if the Index is accessible.
       responses:
         200:
           description: OK
@@ -30,17 +30,19 @@ paths:
       tags:
         - Node Endpoints
       summary: Validate a node profile
-      description: A node operator may want to validate the node profile will be accepted by the index before posting it to the node's website. This endpoint enables such a validation check.
+      description: A node operator may want to check that the profile will be accepted by the Index before posting it to the node's website and then submitting it to the Index. This endpoint enables such a validation check.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ValidateNodeRequest"
+              $ref: "#/components/schemas/Validate"
             example:
               linked_schemas:
-                - "demo_schema-v1"
-              name: "Some Org"
+                - "test_schema-v2.0.0"
+              name: "Some Organization Name"
+              latitude: 11.11
+              longitude: 12.12
       responses:
         200:
           description: OK
@@ -48,38 +50,92 @@ paths:
             application/json:
               schema:
                 type: object
+                required:
+                  - meta
                 properties:
-                  data:
-                    $ref: "#/components/schemas/ValidateNodeResponse"
-              examples:
-                validation_success:
-                  value:
-                    status: 200
-                validation_error:
-                  value:
-                    failure_reasons:
-                      - "test_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
-                      - "test_schema-v1.geolocation.lon: Invalid type. Expected: number, given: string"
-                    status: 400
-                schema_not_found:
-                  value:
-                    failure_reasons:
-                      - "Error when trying to read from schema https://test-cdn.murmurations.network/schemas/test_schema-ver0.json: Could not read schema from HTTP, response status is 404 Not Found"
-                    status: 404
-                missing_linked_schemas:
-                  value:
-                    failure_reasons:
-                      - "The submitted profile does not contain the linked_schemas property."
-                    status: 400
+                  meta:
+                    type: object
+                    required:
+                      - message
+                    properties:
+                      message:
+                        type: string
+              example:
+                meta:
+                  message: "The submitted profile was validated successfully to its linked schemas."
         400:
-          $ref: "#/components/responses/InvalidJSON"
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Validate400"
+              examples:
+                Missing_Required_Property:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Missing Required Property"
+                        detail: "The `latitude` property is required."
+                Invalid_Type:
+                  value:  
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                Invalid_Min/Max_Amounts:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be less than or equal to 90 - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    $ref: "#/components/schemas/Validate404"
+              examples:
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 404
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
   /nodes:
     post:
       tags:
         - Node Endpoints
-      summary: Add a node to the index
+      summary: Add a node to the Index
       description: |
-        A node adds its profile to the index by posting the location of its profile (`profile_url`). Use this endpoint if you want to send large batches of profiles all at once so they are queued for processing. Each profile's unique `node_id` is returned in the response so you can check their statuses later (see `GET /nodes/{node_id}`).
+        A node adds its profile to the Index by posting the location of its profile (`profile_url`). Use this endpoint if you want to send large batches of profiles all at once so they are queued for processing. Each profile's unique `node_id` is returned in the response so you can check their statuses later (see `GET /nodes/{node_id}`).
         
         The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated. Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}.json`. For example:
 
@@ -138,7 +194,7 @@ paths:
         Aggregators can search for nodes based on any of the following parameters:
 
         - A specific schema (`schema`)
-        - When the node was last updated by the index (`last_updated`)
+        - When the node was last updated by the Index (`last_updated`)
         - A distance in kilometers (_"25km"_) or miles (_"15mi"_)) from a specific geolocation (`lat`, `lon`, `range`)
         - By city/town/village/etc, state/province/county/etc. and/or country. (`locality`, `region`, `country`)
         - By node profile status (`posted` or `deleted`)
@@ -203,8 +259,6 @@ paths:
                     meta:
                       number_of_results: 0
                       total_pages: 0
-        400:
-          $ref: "#/components/responses/BadRequest"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -213,9 +267,9 @@ paths:
     post:
       tags:
         - Node Endpoints
-      summary: Add a node to the index with an immediate status response
+      summary: Add a node to the Index with an immediate status response
       description: |
-        This endpoint is similar to the `POST /nodes` endpoint but with a near immediate response back from the index to know if the post was successful or not (i.e., if there were errors in the profile that caused its validation to fail). It fits the Web style of sending a request and creating a callback that handles the response with the details of how that request was processed by the index.
+        This endpoint is similar to the `POST /nodes` endpoint but with a near immediate response back from the Index to know if the post was successful or not (i.e., if there were errors in the profile that caused its validation to fail). It fits the Web style of sending a request and creating a callback that handles the response with the details of how that request was processed by the Index.
       requestBody:
         required: true
         content:
@@ -318,11 +372,11 @@ paths:
     get:
       tags:
         - Node Endpoints
-      summary: Get a node's status from the index
+      summary: Get a node's status from the Index
       description: |
-        A node can get an update about the status of the node profile after it has been submitted to the index (i.e., when using `POST /nodes`).
+        A node can get an update about the status of the node profile after it has been submitted to the Index (i.e., when using `POST /nodes`).
 
-        The record of a node in the index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the index when it has the status of `posted`.
+        The record of a node in the Index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the Index when it has the status of `posted`.
       parameters:
         - $ref: "#/components/parameters/node_id"
       responses:
@@ -424,11 +478,11 @@ paths:
     delete:
       tags:
         - Node Endpoints
-      summary: Delete a node from the index
+      summary: Delete a node from the Index
       description: |
-        A node can delete its profile from the index at any time simply by removing the profile from its `profile_url` on its website and then sending this DELETE request to the index.
+        A node can delete its profile from the Index at any time simply by removing the profile from its `profile_url` on its website and then sending this DELETE request to the Index.
 
-        The index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then remove the profile from its records.
+        The Index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then remove the profile from its records.
       parameters:
         - $ref: "#/components/parameters/node_id"
       responses:
@@ -466,15 +520,13 @@ paths:
                   value:
                     message: "Could not find node_id: {node_id}"
                     status: 404
-        400:
-          $ref: "#/components/responses/BadRequest"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
           $ref: "#/components/responses/InternalServerError"
 components:
   schemas:
-    ValidateNodeRequest:
+    Validate:
       type: object
       required:
         - linked_schemas
@@ -483,19 +535,50 @@ components:
           type: array
           items:
             type: string
-    ValidateNodeResponse:
-      type: object
-      required:
-        - status
-      properties:
-        status:
-          type: string
-          enum:
-            - validation_succeeded
-            - validation_failed
-        failure_reasons:
-          type: array
-          items:
+    Validate400:
+      type: array
+      items:
+        type: object
+        required:
+          - status
+          - title
+          - detail
+        properties:
+          status:
+            type: integer
+          source:
+            type: object
+            required:
+              - pointer
+            properties:
+              pointer:
+                type: string
+          title:
+            type: string
+          detail:
+            type: string
+    Validate404:
+      type: array
+      items:
+        type: object
+        required:
+          - status
+          - source
+          - title
+          - detail
+        properties:
+          status:
+            type: integer
+          source:
+            type: object
+            required:
+              - pointer
+            properties:
+              pointer:
+                type: string
+          title:
+            type: string
+          detail:
             type: string
     PostNodeRequest:
       type: object
@@ -652,7 +735,7 @@ components:
     last_updated:
       name: last_updated
       in: query
-      description: Unix timestamp in seconds when node was last updated by index
+      description: Unix timestamp in seconds when node was last updated by Index
       schema:
         type: integer
     lat:
@@ -740,17 +823,6 @@ components:
       schema:
         type: integer
   responses:
-    BadRequest:
-      description: The request is missing a required parameter.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-          example:
-            value:
-              status: 400
-              title: "..."
-              message: "<named> parameter is missing."
     InvalidJSON:
       description: The JSON document in the request body is malformed.
       content:
@@ -772,7 +844,7 @@ components:
             title: "Gone"
             detail: "The v1 API has been deprecated. Please use the v2 API instead: https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0"
     TooManyRequests:
-      description: The request limit for this resource has been reached for the current rate limit window.
+      description: Too Many Requests
       content:
         application/json:
           schema:
@@ -782,7 +854,7 @@ components:
             title: "Too Many Requests"
             detail: "You have exceeded the maximum number of requests per minute/hour. Please try again later. For more information see: https://docs.murmurations.network/developers/rate-limits.html"
     InternalServerError:
-      description: An unknown internal error occurred.
+      description: Internal Server Error
       content:
         application/json:
           schema:
