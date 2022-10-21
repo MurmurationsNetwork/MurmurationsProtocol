@@ -144,34 +144,29 @@ paths:
           content:
             application/json:
               schema:
-                # Still waiting on a fix to display multiple responses correctly:
-                # https://github.com/swagger-api/swagger-ui/issues/3803
-                # https://github.com/swagger-api/swagger-ui/pull/5530
-                oneOf:
-                  - type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/PostNodeResponse"
-                    example:
-                      data:
-                        node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                  - allOf:
-                      - $ref: "#/components/schemas/Error"
-                      - example:
-                          message: "The profile_url parameter is missing."
-                          status: 400
-                  - allOf:
-                      - $ref: "#/components/schemas/Error"
-                      - example:
-                          message: "Could not find the linked_schemas property."
-                          status: 400
-                  - allOf:
-                      - $ref: "#/components/schemas/Error"
-                      - example:
-                          message: "Could not find node_id: {node_id}"
-                          status: 404
+                $ref: "#/components/schemas/PostNode200"
+              example:
+                data:
+                  node_id: "2c3b4e4ff6e5531ec1918f8cbb587cdaf1b908b912af34d393b7a689f285805f"
         400:
-          $ref: "#/components/responses/InvalidJSON"
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNode400"
+              examples:
+                No_Profile_URL:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Missing Required Property"
+                        detail: "The `profile_url` property is required."
+                Invalid_Profile_URL:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Invalid Profile URL"
+                        detail: "The `profile_url` is not a valid URL."
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -595,13 +590,36 @@ components:
       properties:
         profile_url:
           type: string
-    PostNodeResponse:
+    PostNode200:
       type: object
       required:
-        - node_id
+        - data
       properties:
-        node_id:
-          type: string
+        data:
+          type: object
+          required:
+            - node_id
+          properties:
+            node_id:
+              type: string
+    PostNode400:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
     PostNodeSyncRequest:
       type: object
       required:
