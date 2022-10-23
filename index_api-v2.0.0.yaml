@@ -94,6 +94,14 @@ paths:
                           pointer: "/longitude"
                         title: "Invalid Amount"
                         detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
                 JSON_Error:
                   value:
                     errors:
@@ -359,9 +367,9 @@ paths:
         - Node Endpoints
       summary: Get a node's status from the Index
       description: |
-        A node can get an update about the status of the node profile after it has been submitted to the Index (i.e., when using `POST /nodes`).
+        A node can request an update about the status of the node profile after it has been submitted to the Index (i.e., when using `POST /nodes`).
 
-        The record of a node in the Index's database can be in one of five possible states: `received`, `validated`, `validation_failed`, `posted` or `post_failed`. The node will only be discoverable in the Index when it has the status of `posted`.
+        The record of a node in the Index's database can be in one of six possible states: `received`, `validated`, `validation_failed`, `post_failed`, `posted` or `deleted`. The node will only be discoverable in the Index when it has the status of `posted` or `deleted`.
       parameters:
         - $ref: "#/components/parameters/node_id"
       responses:
@@ -370,10 +378,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/GetNodeStatusResponse"
+                $ref: "#/components/schemas/GetNodeId200"
               examples:
                 received:
                   value:
@@ -405,57 +410,97 @@ paths:
                       status: "deleted"
                       last_updated: 1601979232403
                       profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
-                validation_failed_no_profile_url:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "Could not read from profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
-                validation_failed_with_schema:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "example_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
-                validation_failed_no_schema:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "Could not read from schema: example_schema-v1"
-                validation_failed_no_linked_schemas:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "default-v2.0.0.(root): linked_schemas is required"
                 post_failed:
                   value:
+                    meta:
+                      message: "The system will automatically re-post the node, please check back in a minute."
                     data:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
                       last_updated: 1601979232403
-                # Still waiting on a fix to display multiple responses correctly:
-                #   - allOf:
-                #       - $ref: "#/components/schemas/Error"
-                #       - example:
-                #           message: "Could not find node_id: {node_id}"
-                #           status: 404
-                # As a result this response below does not match
-                # components/schemas/GetNodeStatusResponse
-                NodeNotFoundInIndex:
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodeId4xx"
+              examples:
+                Missing_Required_Property:
                   value:
-                    message: "Could not find node_id: {node_id}"
-                    status: 404
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Missing Required Property"
+                        detail: "The `latitude` property is required."
+                Invalid_Type:
+                  value:  
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                Invalid_Min/Max_Amounts:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be less than or equal to 90 - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodeId4xx"
+              examples:
+                Profile_Not_Found_or_Invalid:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Profile Not Found"
+                        detail: "Could not find or read from (invalid JSON) the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+                Node_Not_Found:
+                  value:
+                    errors:
+                      - status: 404
+                        title: "Node Not Found"
+                        detail: "Could not locate the following node_id in the index: b66964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -604,6 +649,8 @@ components:
               type: string
     PostNode400:
       type: object
+      required:
+        - errors
       properties:
         errors:
           type: array
@@ -693,34 +740,78 @@ components:
             type: array
             items:
               type: string
-    GetNodeStatusResponse:
+    GetNodeId200:
       type: object
       required:
-        - profile_url
-        - node_id
-        - status
+        - data
       properties:
-        profile_url:
-          type: string
-        node_id:
-          type: string
-        status:
-          type: string
-          enum:
-            - received
-            - validated
-            - posted
-            - deleted
-            - validation_failed
-            - post_failed
-        last_updated:
-          type: number
-        profile_hash:
-          type: string
-        failure_reasons:
+        meta:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+        data:
+          type: object
+          required:
+            - profile_url
+            - node_id
+            - status
+          properties:
+            profile_url:
+              type: string
+            node_id:
+              type: string
+            status:
+              type: string
+              enum:
+                - received
+                - validated
+                - post_failed
+                - posted
+                - deleted
+            last_updated:
+              type: number
+            profile_hash:
+              type: string
+    GetNodeId4xx:
+      type: object
+      required:
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+            - profile_url
+          properties:
+            node_id:
+              type: string
+            profile_url:
+              type: string
+        errors:
           type: array
           items:
-            type: string
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
     DeleteNodeResponse:
       type: object
       required:
@@ -748,7 +839,7 @@ components:
     node_id:
       name: node_id
       in: path
-      description: The ID of the node
+      description: The unique ID of the node
       required: true
       schema:
         type: string
