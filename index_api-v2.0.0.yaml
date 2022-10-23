@@ -268,7 +268,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostNodeSyncRequest"
+              $ref: "#/components/schemas/PostNode"
             example:
               profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
       responses:
@@ -277,10 +277,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/PostNodeSyncResponse"
+                    $ref: "#/components/schemas/ReceiveData200"
               examples:
                 posted:
                   value:
@@ -290,73 +287,96 @@ paths:
                       status: "posted"
                       last_updated: 1601979232403
                       profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
-                validation_failed_no_profile_url:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "Could not read from profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
-                validation_failed_with_schema:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "example_schema-v1.geolocation.lat: Invalid type. Expected: number, given: string"
-                validation_failed_no_schema:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "Could not read from schema: example_schema-v1"
-                validation_failed_no_linked_schemas:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validation_failed"
-                      failure_reasons:
-                        - "default-v2.0.0.(root): linked_schemas is required"
-                received:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "received"
-                validated:
-                  value:
-                    data:
-                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
-                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
-                      status: "validated"
-                      last_updated: 1601979232403
-                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
                 post_failed:
                   value:
+                    meta:
+                      message: "The system will automatically re-post the node, please check back in a minute."
                     data:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                       status: "post_failed"
                       last_updated: 1601979232403
-                # Still waiting on a fix to display multiple responses correctly:
-                #   - allOf:
-                #       - $ref: "#/components/schemas/Error"
-                #       - example:
-                #           message: "The profile_url parameter is missing."
-                #           status: 400
-                # As a result this response below does not match
-                # components/schemas/PostNodeSyncResponse
-                ProfileUrlMissing:
-                  value:
-                    message: "The profile_url parameter is missing."
-                    status: 400
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
         400:
-          $ref: "#/components/responses/InvalidJSON"
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNodeSync4xx"
+              examples:
+                Profile_URL_Missing_in_Request:
+                  value:
+                    errors:
+                      status: 400
+                      title: "Missing Required Property"
+                      detail: "The `profile_url` property is required."
+                Missing_Required_Property:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Missing Required Property"
+                        detail: "The `latitude` property is required."
+                Invalid_Type:
+                  value:  
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                Invalid_Min/Max_Amounts:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be less than or equal to 90 - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNodeSync4xx"
+              examples:
+                Profile_Not_Found_or_Invalid:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 404
+                        title: "Profile Not Found"
+                        detail: "Could not find or read from (invalid JSON) the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -378,7 +398,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetNodeId200"
+                $ref: "#/components/schemas/ReceiveData200"
               examples:
                 received:
                   value:
@@ -490,9 +510,7 @@ paths:
                       node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
                       profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
                     errors:
-                      - status: 400
-                        source:
-                          pointer: "/latitude"
+                      - status: 404
                         title: "Profile Not Found"
                         detail: "Could not find or read from (invalid JSON) the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
                 Node_Not_Found:
@@ -681,80 +699,7 @@ components:
                 type: string
               detail:
                 type: string
-    PostNodeSyncRequest:
-      type: object
-      required:
-        - profile_url
-      properties:
-        profile_url:
-          type: string
-    PostNodeSyncResponse:
-      type: object
-      required:
-        - profile_url
-        - node_id
-        - status
-      properties:
-        profile_url:
-          type: string
-        node_id:
-          type: string
-        status:
-          type: string
-          enum:
-            - received
-            - validated
-            - posted
-            - deleted
-            - validation_failed
-            - post_failed
-        last_updated:
-          type: number
-        profile_hash:
-          type: string
-        failure_reasons:
-          type: array
-          items:
-            type: string
-    GetNodesResponse:
-      type: array
-      items:
-        type: object
-        required:
-          - profile_url
-          - last_updated
-          - linked_schemas
-        properties:
-          profile_url:
-            type: string
-          last_updated:
-            type: number
-          linked_schemas:
-            type: array
-            items:
-              type: string
-          primary_url:
-            type: string
-          geolocation:
-            type: object
-            properties:
-              lat:
-                type: number
-              lon:
-                type: number
-          locality:
-            type: string
-          region:
-            type: string
-          country:
-            type: string
-          status:
-            type: string
-          tags:
-            type: array
-            items:
-              type: string
-    GetNodeId200:
+    ReceiveData200:
       type: object
       required:
         - data
@@ -786,8 +731,83 @@ components:
                 - posted
                 - deleted
             last_updated:
-              type: number
+              type: integer
             profile_hash:
+              type: string
+    PostNodeSync4xx:
+      type: object
+      required:
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+            - profile_url
+          properties:
+            node_id:
+              type: string
+            profile_url:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
+    GetNodesResponse:
+      type: array
+      items:
+        type: object
+        required:
+          - profile_url
+          - last_updated
+          - linked_schemas
+        properties:
+          profile_url:
+            type: string
+          last_updated:
+            type: integer
+          linked_schemas:
+            type: array
+            items:
+              type: string
+          primary_url:
+            type: string
+          geolocation:
+            type: object
+            properties:
+              lat:
+                type: number
+              lon:
+                type: number
+          locality:
+            type: string
+          region:
+            type: string
+          country:
+            type: string
+          status:
+            type: string
+          tags:
+            type: array
+            items:
               type: string
     GetNodeId4xx:
       type: object
