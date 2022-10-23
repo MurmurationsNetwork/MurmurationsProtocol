@@ -500,7 +500,7 @@ paths:
                     errors:
                       - status: 404
                         title: "Node Not Found"
-                        detail: "Could not locate the following node_id in the index: b66964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                        detail: "Could not locate the following node_id in the Index: b66964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -510,9 +510,9 @@ paths:
         - Node Endpoints
       summary: Delete a node from the Index
       description: |
-        A node can delete its profile from the Index at any time simply by removing the profile from its `profile_url` on its website and then sending this DELETE request to the Index.
+        A node can delete its profile from the Index at any time simply by removing the profile from its `profile_url` on its website and then sending a DELETE request to the Index.
 
-        The Index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then remove the profile from its records.
+        The Index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then mark the profile as deleted in its records.
       parameters:
         - $ref: "#/components/parameters/node_id"
       responses:
@@ -521,35 +521,49 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/DeleteNodeResponse"
+                $ref: "#/components/schemas/DeleteNode200"
               examples:
                 ProfileDeleted:
                   value:
-                    message: "Removed profile at {profile_url}"
-                    status: 200
-                ProfileStillExists:
+                    meta:
+                      message: "The Index has recorded as deleted the profile that was previously posted at: https://somenode.org/optional-subdirectory/node-profile.json"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNode400"
+              examples:
+                Profile_Still_Exists:
                   value:
-                    message: "Profile still exists at {profile_url} for node_id {node_id}"
-                    status: 400
-                ErrorContactingNode:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        title: "Profile Still Exists"
+                        detail: "The profile could not be deleted from the Index because it still exists at the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+                Missing_Required_Parameter:
                   value:
-                    message: "Error when trying to reach {profile_url} to delete node_id {node_id}"
-                    status: 400
-                OtherStatusCode:
+                    errors:
+                      - status: 400
+                        title: "Missing Path Parameter"
+                        detail: "The `node_id` path parameter is missing."
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNode404"
+              examples:
+                Node_Not_Found:
                   value:
-                    message: "Node at {profile_url} returned status code {status_code}"
-                    status: 400
-                NodeIdMissing:
-                  value:
-                    message: "The node_id path parameter is missing."
-                    status: 400
-                NodeIdNotFound:
-                  value:
-                    message: "Could not find node_id: {node_id}"
-                    status: 404
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                    errors:
+                      - status: 404
+                        title: "Node Not Found"
+                        detail: "Could not locate the following node_id in the Index: a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -812,16 +826,76 @@ components:
                 type: string
               detail:
                 type: string
-    DeleteNodeResponse:
+    DeleteNode200:
       type: object
       required:
-        - message
-        - status
+        - meta
       properties:
-        message:
-          type: string
-        status:
-          type: integer
+        meta:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+    DeleteNode400:
+      type: object
+      required:
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+            - profile_url
+          properties:
+            node_id:
+              type: string
+            profile_url:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
+    DeleteNode404:
+      type: object
+      required:
+        - meta
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+          properties:
+            node_id:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
     Error:
       type: object
       required:
