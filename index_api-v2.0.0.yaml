@@ -185,18 +185,20 @@ paths:
       summary: Search for nodes
       description: |
         Aggregators can search for nodes based on any of the following parameters:
-
         - A specific schema (`schema`)
         - When the node was last updated by the Index (`last_updated`)
         - A distance in kilometers (_"25km"_) or miles (_"15mi"_)) from a specific geolocation (`lat`, `lon`, `range`)
-        - By city/town/village/etc, state/province/county/etc. and/or country. (`locality`, `region`, `country`)
+        - By city/town/village/etc, state/province/county/etc. and/or country (`locality`, `region`, `country`)
         - By node profile status (`posted` or `deleted`)
-        - By tags that describe the node (using an AND/OR filter with fuzzy or exact matching)
+        - By `tags` that describe the node using an AND/OR filter (`tags_filter=and`/`tags_filter=or` default = `or`) with fuzzy or exact matching (`tags_exact=false`/`tags_exact=true` default = `false`)
         - By the nodes website address (`primary_url`)
+        - Results can be paginated using the `page` (default = 1) and `page_size` (default = 30 results, maximum = 500) parameters
+        
+        The `links` object may contain the following pagination links: `first`, `prev`, `self`, `next` and `last`.
 
-        Query results can be paginated using the `page` and `page_size` parameters.
+        The `meta` object may contain the following results information: `number_of_results` and `total_pages`.
 
-        Aggregators will eventually be required to authenticate themselves with an API key or JWT (to be determined) to access this endpoint.
+        The Index will return a maximum of only 10,000 results. If there are more than 10,000 results indicated by the `number_of_results` property, please refine your search to return less results.
       parameters:
         - $ref: "#/components/parameters/schema"
         - $ref: "#/components/parameters/last_updated"
@@ -219,10 +221,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/GetNodesResponse"
+                $ref: "#/components/schemas/GetNodes200"
               examples:
                 ResultsFound:
                   value:
@@ -243,15 +242,35 @@ paths:
                         linked_schemas:
                           - example_schema-v1
                           - another_example-v1
+                    links:
+                      self: "http://test-index.murmurations.network/v2/nodes?primary_url=some.org&page=1"
                     meta:
                       number_of_results: 1
                       total_pages: 1
                 NoResults:
                   value:
                     data: []
-                    meta:
-                      number_of_results: 0
-                      total_pages: 0
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodes400"
+              examples:
+                Invalid_Query_Parameter:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          parameter: "Page"
+                        title: "Invalid Query Parameter"
+                        detail: "The following query parameter is not valid: Page"
+                Max_Results_Exceeded:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Max Results Exceeded"
+                        detail: "No more than 10,000 results can be returned. Refine your query so it will return less but more relevant results."
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -734,6 +753,104 @@ components:
               type: integer
             profile_hash:
               type: string
+    GetNodes200:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - profile_url
+              - last_updated
+              - linked_schemas
+            properties:
+              profile_url:
+                type: string
+              last_updated:
+                type: integer
+              linked_schemas:
+                type: array
+                items:
+                  type: string
+              primary_url:
+                type: string
+              geolocation:
+                type: object
+                required:
+                  - lat
+                  - lon
+                properties:
+                  lat:
+                    type: number
+                  lon:
+                    type: number
+              locality:
+                type: string
+              region:
+                type: string
+              country:
+                type: string
+              status:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+        links:
+          type: object
+          required:
+            - self
+          properties:
+            first:
+              type: string
+            prev:
+              type: string
+            self:
+              type: string
+            next:
+              type: string
+            last:
+              type: string
+        meta:
+          type: object
+          required:
+            - number_of_results
+            - total_pages
+          properties:
+            number_of_results:
+              type: integer
+            total_pages:
+              type: integer
+    GetNodes400:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - parameter
+                properties:
+                  parameter:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
     PostNodeSync4xx:
       type: object
       required:
@@ -771,44 +888,6 @@ components:
                 type: string
               detail:
                 type: string
-    GetNodesResponse:
-      type: array
-      items:
-        type: object
-        required:
-          - profile_url
-          - last_updated
-          - linked_schemas
-        properties:
-          profile_url:
-            type: string
-          last_updated:
-            type: integer
-          linked_schemas:
-            type: array
-            items:
-              type: string
-          primary_url:
-            type: string
-          geolocation:
-            type: object
-            properties:
-              lat:
-                type: number
-              lon:
-                type: number
-          locality:
-            type: string
-          region:
-            type: string
-          country:
-            type: string
-          status:
-            type: string
-          tags:
-            type: array
-            items:
-              type: string
     GetNodeId4xx:
       type: object
       required:
