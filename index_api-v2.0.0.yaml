@@ -282,6 +282,8 @@ paths:
       summary: Add a node to the Index with an immediate status response
       description: |
         This endpoint is similar to the `POST /nodes` endpoint but with a near immediate response back from the Index to know if the post was successful or not (i.e., if there were errors in the profile that caused its validation to fail). It fits the Web style of sending a request and creating a callback that handles the response with the details of how that request was processed by the Index.
+
+        Unlike with the `GET /nodes/{node_id}` endpoint, the `received`, `validated` and `post_failed` responses will only be returned in very rare circumstances (i.e., unavailability of one or more of the backend services). Expect to only see the `posted` status in a 200 OK response when posting to this endpoint.
       requestBody:
         required: true
         content:
