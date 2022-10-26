@@ -1,0 +1,1157 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: Murmurations Index API
+  description: API schema for the Murmurations Index
+servers:
+  - description: Murmurations Testing Platform
+    url: https://test-index.murmurations.network/v2
+tags:
+  - name: Common Endpoints
+  - name: Node Endpoints
+  - name: Aggregator Endpoints
+paths:
+  /ping:
+    get:
+      tags:
+        - Common Endpoints
+      summary: Ping the Index
+      description: This is an endpoint for checking if the Index is accessible.
+      responses:
+        200:
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: pong!
+  /validate:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Validate a node profile
+      description: A node operator may want to check that the profile will be accepted by the Index before posting it to the node's website and then submitting it to the Index. This endpoint enables such a validation check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Validate"
+            example:
+              linked_schemas:
+                - "test_schema-v2.0.0"
+              name: "Some Organization Name"
+              latitude: 11.11
+              longitude: 12.12
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Validate200"
+              example:
+                meta:
+                  message: "The submitted profile was validated successfully to its linked schemas."
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Validate400"
+              examples:
+                Missing_Required_Property:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Missing Required Property"
+                        detail: "The `latitude` property is required."
+                Invalid_Type:
+                  value:  
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                Invalid_Min/Max_Amounts:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be less than or equal to 90 - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+                JSON_Error:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "JSON Error"
+                        detail: "The JSON document submitted could not be parsed."
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Validate404"
+              examples:
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 404
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /nodes:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Add a node to the Index
+      description: |
+        A node adds its profile to the Index by posting the location of its profile (`profile_url`). Use this endpoint if you want to send large batches of profiles all at once so they are queued for processing. Each profile's unique `node_id` is returned in the response so you can check their statuses later (see `GET /nodes/{node_id}`).
+        
+        The profile must include a list (`linked_schemas`) of one or more schemas against which the profile must be validated. Each `linked_schemas` item is the name of a schema which can be found in the library using the following URL format: `{baseUrl}/schemas/{schema}`. For example:
+
+        `https://test-library.murmurations.network/schemas/test_schema-v2.0.0`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostNode"
+            example:
+              profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNode200"
+              example:
+                data:
+                  node_id: "2c3b4e4ff6e5531ec1918f8cbb587cdaf1b908b912af34d393b7a689f285805f"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNode400"
+              examples:
+                No_Profile_URL:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Missing Required Property"
+                        detail: "The `profile_url` property is required."
+                Invalid_Profile_URL:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Invalid Profile URL"
+                        detail: "The `profile_url` is not a valid URL."
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    get:
+      tags:
+        - Aggregator Endpoints
+      summary: Search for nodes
+      description: |
+        Aggregators can search for nodes based on any of the following parameters:
+        - A specific schema (`schema`)
+        - When the node was last updated by the Index (`last_updated`)
+        - A distance in kilometers (_"25km"_) or miles (_"15mi"_)) from a specific geolocation (`lat`, `lon`, `range`)
+        - By city/town/village/etc, state/province/county/etc. and/or country (`locality`, `region`, `country`)
+        - By node profile status (`posted` or `deleted`)
+        - By `tags` that describe the node using an AND/OR filter (`tags_filter=and`/`tags_filter=or` default = `or`) with fuzzy or exact matching (`tags_exact=false`/`tags_exact=true` default = `false`)
+        - By the nodes website address (`primary_url`)
+        - Results can be paginated using the `page` (default = 1) and `page_size` (default = 30 results, maximum = 500) parameters
+        
+        The `links` object may contain the following pagination links: `first`, `prev`, `self`, `next` and `last`.
+
+        The `meta` object may contain the following results information: `number_of_results` and `total_pages`.
+
+        The Index will return a maximum of only 10,000 results. If there are more than 10,000 results indicated by the `number_of_results` property, please refine your search to return less results.
+      parameters:
+        - $ref: "#/components/parameters/schema"
+        - $ref: "#/components/parameters/last_updated"
+        - $ref: "#/components/parameters/lat"
+        - $ref: "#/components/parameters/lon"
+        - $ref: "#/components/parameters/range"
+        - $ref: "#/components/parameters/locality"
+        - $ref: "#/components/parameters/region"
+        - $ref: "#/components/parameters/country"
+        - $ref: "#/components/parameters/status"
+        - $ref: "#/components/parameters/tags"
+        - $ref: "#/components/parameters/tags_filter"
+        - $ref: "#/components/parameters/tags_exact"
+        - $ref: "#/components/parameters/primary_url"
+        - $ref: "#/components/parameters/page"
+        - $ref: "#/components/parameters/page_size"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodes200"
+              examples:
+                ResultsFound:
+                  value:
+                    data:
+                      - profile_url: "https://www.somenode.org/optional-subdirectory/node-profile.json"
+                        last_updated: 1601979232403
+                        primary_url: "somenode.org"
+                        geolocation:
+                          lat: 51.509865
+                          lon: -0.118092
+                        locality: London
+                        region: Greater London
+                        country: GB
+                        status: posted
+                        tags:
+                          - beer
+                          - pizza
+                        linked_schemas:
+                          - example_schema-v1
+                          - another_example-v1
+                    links:
+                      self: "http://test-index.murmurations.network/v2/nodes?primary_url=some.org&page=1"
+                    meta:
+                      number_of_results: 1
+                      total_pages: 1
+                NoResults:
+                  value:
+                    data: []
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodes400"
+              examples:
+                Invalid_Query_Parameter:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          parameter: "Page"
+                        title: "Invalid Query Parameter"
+                        detail: "The following query parameter is not valid: Page"
+                Max_Results_Exceeded:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Max Results Exceeded"
+                        detail: "No more than 10,000 results can be returned. Refine your query so it will return less but more relevant results."
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /nodes-sync:
+    post:
+      tags:
+        - Node Endpoints
+      summary: Add a node to the Index with an immediate status response
+      description: |
+        This endpoint is similar to the `POST /nodes` endpoint but with a near immediate response back from the Index to know if the post was successful or not (i.e., if there were errors in the profile that caused its validation to fail). It fits the Web style of sending a request and creating a callback that handles the response with the details of how that request was processed by the Index.
+
+        Unlike with the `GET /nodes/{node_id}` endpoint, the `received`, `validated` and `post_failed` responses will only be returned in very rare circumstances (i.e., unavailability of one or more of the backend services). Expect to only see the `posted` status in a 200 OK response when posting to this endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostNode"
+            example:
+              profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                    $ref: "#/components/schemas/ReceiveData200"
+              examples:
+                posted:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "posted"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                post_failed:
+                  value:
+                    meta:
+                      message: "The system will automatically re-post the node, please check back in a minute."
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "post_failed"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNodeSync4xx"
+              examples:
+                Profile_URL_Missing_in_Request:
+                  value:
+                    errors:
+                      status: 400
+                      title: "Missing Required Property"
+                      detail: "The `profile_url` property is required."
+                Missing_Required_Property:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Missing Required Property"
+                        detail: "The `latitude` property is required."
+                Invalid_Type:
+                  value:  
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                Invalid_Min/Max_Amounts:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be less than or equal to 90 - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostNodeSync4xx"
+              examples:
+                Profile_Not_Found_or_Invalid:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 404
+                        title: "Profile Not Found"
+                        detail: "Could not find or read from (invalid JSON) the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /nodes/{node_id}:
+    get:
+      tags:
+        - Node Endpoints
+      summary: Get a node's status from the Index
+      description: |
+        A node can request an update about the status of the node profile after it has been submitted to the Index (i.e., when using `POST /nodes`).
+
+        The record of a node in the Index's database can be in one of six possible states: `received`, `validated`, `validation_failed`, `post_failed`, `posted` or `deleted`. The node will only be discoverable in the Index when it has the status of `posted` or `deleted`.
+      parameters:
+        - $ref: "#/components/parameters/node_id"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceiveData200"
+              examples:
+                received:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "received"
+                validated:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "validated"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                posted:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "posted"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                deleted:
+                  value:
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "deleted"
+                      last_updated: 1601979232403
+                      profile_hash: "c24d14c2c75f55d334a7e0ccf4d35a063a2582a7abb91e16d326f6613b9602bf"
+                post_failed:
+                  value:
+                    meta:
+                      message: "The system will automatically re-post the node, please check back in a minute."
+                    data:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                      status: "post_failed"
+                      last_updated: 1601979232403
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodeId4xx"
+              examples:
+                Missing_Required_Property:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Missing Required Property"
+                        detail: "The `latitude` property is required."
+                Invalid_Type:
+                  value:  
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Type"
+                        detail: "Expected: number - Given: string - Schema: test_schema-v2.0.0"
+                Invalid_Min/Max_Amounts:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/latitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be less than or equal to 90 - Schema: test_schema-v2.0.0"
+                      - status: 400
+                        source:
+                          pointer: "/longitude"
+                        title: "Invalid Amount"
+                        detail: "Amount must be greater than or equal to -180 - Schema: test_schema-v2.0.0"
+                Missing_Schema:
+                  value:
+                    errors:
+                      - status: 400
+                        source:
+                          pointer: "/linked_schemas"
+                        title: "Schema Not Found"
+                        detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetNodeId4xx"
+              examples:
+                Profile_Not_Found_or_Invalid:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 404
+                        title: "Profile Not Found"
+                        detail: "Could not find or read from (invalid JSON) the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+                Node_Not_Found:
+                  value:
+                    errors:
+                      - status: 404
+                        title: "Node Not Found"
+                        detail: "Could not locate the following node_id in the Index: b66964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+        - Node Endpoints
+      summary: Delete a node from the Index
+      description: |
+        A node can delete its profile from the Index at any time simply by removing the profile from its `profile_url` on its website and then sending a DELETE request to the Index.
+
+        The Index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then mark the profile as deleted in its records.
+      parameters:
+        - $ref: "#/components/parameters/node_id"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNode200"
+              examples:
+                ProfileDeleted:
+                  value:
+                    meta:
+                      message: "The Index has recorded as deleted the profile that was previously posted at: https://somenode.org/optional-subdirectory/node-profile.json"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNode400"
+              examples:
+                Profile_Still_Exists:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                      profile_url: "https://somenode.org/optional-subdirectory/node-profile.json"
+                    errors:
+                      - status: 400
+                        title: "Profile Still Exists"
+                        detail: "The profile could not be deleted from the Index because it still exists at the profile_url: https://somenode.org/optional-subdirectory/node-profile.json"
+                Missing_Required_Parameter:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "Missing Path Parameter"
+                        detail: "The `node_id` path parameter is missing."
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNode404"
+              examples:
+                Node_Not_Found:
+                  value:
+                    meta:
+                      node_id: "a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+                    errors:
+                      - status: 404
+                        title: "Node Not Found"
+                        detail: "Could not locate the following node_id in the Index: a55964aeaae9625dc2b8dbdb1c4ce0ed1e658483f44cf2be1a6479fe5e144d38"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+components:
+  schemas:
+    Validate:
+      type: object
+      required:
+        - linked_schemas
+      properties:
+        linked_schemas:
+          type: array
+          items:
+            type: string
+    Validate200:
+      type: object
+      required:
+        - meta
+      properties:
+        meta:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+    Validate400:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
+    Validate404:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - source
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
+    PostNode:
+      type: object
+      required:
+        - profile_url
+      properties:
+        profile_url:
+          type: string
+    PostNode200:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - node_id
+          properties:
+            node_id:
+              type: string
+    PostNode400:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
+    ReceiveData200:
+      type: object
+      required:
+        - data
+      properties:
+        meta:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+        data:
+          type: object
+          required:
+            - profile_url
+            - node_id
+            - status
+          properties:
+            profile_url:
+              type: string
+            node_id:
+              type: string
+            status:
+              type: string
+              enum:
+                - received
+                - validated
+                - post_failed
+                - posted
+                - deleted
+            last_updated:
+              type: integer
+            profile_hash:
+              type: string
+    GetNodes200:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            required:
+              - profile_url
+              - last_updated
+              - linked_schemas
+            properties:
+              profile_url:
+                type: string
+              last_updated:
+                type: integer
+              linked_schemas:
+                type: array
+                items:
+                  type: string
+              primary_url:
+                type: string
+              geolocation:
+                type: object
+                required:
+                  - lat
+                  - lon
+                properties:
+                  lat:
+                    type: number
+                  lon:
+                    type: number
+              locality:
+                type: string
+              region:
+                type: string
+              country:
+                type: string
+              status:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+        links:
+          type: object
+          required:
+            - self
+          properties:
+            first:
+              type: string
+            prev:
+              type: string
+            self:
+              type: string
+            next:
+              type: string
+            last:
+              type: string
+        meta:
+          type: object
+          required:
+            - number_of_results
+            - total_pages
+          properties:
+            number_of_results:
+              type: integer
+            total_pages:
+              type: integer
+    GetNodes400:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - parameter
+                properties:
+                  parameter:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
+    PostNodeSync4xx:
+      type: object
+      required:
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+            - profile_url
+          properties:
+            node_id:
+              type: string
+            profile_url:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
+    GetNodeId4xx:
+      type: object
+      required:
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+            - profile_url
+          properties:
+            node_id:
+              type: string
+            profile_url:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              source:
+                type: object
+                required:
+                  - pointer
+                properties:
+                  pointer:
+                    type: string
+              title:
+                type: string
+              detail:
+                type: string
+    DeleteNode200:
+      type: object
+      required:
+        - meta
+      properties:
+        meta:
+          type: object
+          required:
+            - message
+          properties:
+            message:
+              type: string
+    DeleteNode400:
+      type: object
+      required:
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+            - profile_url
+          properties:
+            node_id:
+              type: string
+            profile_url:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
+    DeleteNode404:
+      type: object
+      required:
+        - meta
+        - errors
+      properties:
+        meta:
+          type: object
+          required:
+            - node_id
+          properties:
+            node_id:
+              type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - status
+              - title
+              - detail
+            properties:
+              status:
+                type: integer
+              title:
+                type: string
+              detail:
+                type: string
+    Error:
+      type: object
+      required:
+        - status
+        - title
+        - detail
+      properties:
+        status:
+          type: integer
+        title:
+          type: string
+        detail:
+          type: string
+  parameters:
+    node_id:
+      name: node_id
+      in: path
+      description: The unique ID of the node
+      required: true
+      schema:
+        type: string
+    schema:
+      name: schema
+      in: query
+      description: The name of the schema
+      schema:
+        type: string
+    last_updated:
+      name: last_updated
+      in: query
+      description: Unix timestamp in seconds when node was last updated by Index
+      schema:
+        type: integer
+    lat:
+      name: lat
+      in: query
+      description: geolocation latitude coordinate
+      schema:
+        type: number
+    lon:
+      name: lon
+      in: query
+      description: geolocation longitude coordinate
+      schema:
+        type: number
+    range:
+      name: range
+      in: query
+      description: distance from geo-coordinates ("10km" or "6mi")
+      schema:
+        type: string
+    locality:
+      name: locality
+      in: query
+      description: town, city, village, etc.
+      schema:
+        type: string
+    region:
+      name: region
+      in: query
+      description: state, province, county, etc.
+      schema:
+        type: string
+    country:
+      name: country
+      in: query
+      description: two-letter country code
+      schema:
+        type: string
+    status:
+      name: status
+      in: query
+      description: status of node
+      schema:
+        type: string
+        enum:
+          - posted
+          - deleted
+    tags:
+      name: tags
+      in: query
+      description: a comma-separated list that describe the node
+      schema:
+        type: string
+    tags_filter:
+      name: tags_filter
+      in: query
+      description: an AND/OR filter for multiple tags
+      schema:
+        type: string
+        enum:
+          - and
+          - or
+    tags_exact:
+      name: tags_exact
+      in: query
+      description: a toggle for exact or fuzzy matching of tags
+      schema:
+        type: boolean
+    primary_url:
+      name: primary_url
+      in: query
+      description: the canonical URL that identifies a node
+      schema:
+        type: string
+    page:
+      name: page
+      in: query
+      description: page number in paginated results
+      schema:
+        type: integer
+    page_size:
+      name: page_size
+      in: query
+      description: page size for paginated results
+      schema:
+        type: integer
+  responses:
+    InvalidJSON:
+      description: The JSON document in the request body is malformed.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 400
+            title: "Invalid JSON"
+            message: "The body of the JSON document submitted is malformed."
+    Gone:
+      description: The target resource is no longer available.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 410
+            title: "Gone"
+            detail: "The v1 API has been deprecated. Please use the v2 API instead: https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0"
+    TooManyRequests:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 429
+            title: "Too Many Requests"
+            detail: "You have exceeded the maximum number of requests per minute/hour. Please try again later. For more information see: https://docs.murmurations.network/developers/rate-limits.html"
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 500
+            title: "Internal Server Error"
+            detail: "An internal server error was triggered and has been logged. Please try your request again later."

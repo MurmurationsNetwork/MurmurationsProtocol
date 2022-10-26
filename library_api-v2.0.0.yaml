@@ -1,0 +1,190 @@
+openapi: 3.0.0
+info:
+  version: 2.0.0
+  title: Murmurations Library API
+  description: API schema for the Murmurations Library
+servers:
+  - description: Murmurations Testing Platform
+    url: https://test-library.murmurations.network/v2
+tags:
+  - name: Common Endpoints
+paths:
+  /ping:
+    get:
+      tags:
+        - Common Endpoints
+      summary: Ping the Library
+      description: |
+        Check if the index is live
+      responses:
+        200:
+          description: OK
+  /schemas:
+    get:
+      tags:
+        - Common Endpoints
+      summary: Get a list of schemas
+      description: |
+        The Index will need the list of schemas in the Library in order to validate profiles, and Murmurations profile generators will need them to build input forms for users. This endpoint returns summary information for all of the schemas available in the Library.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSchemas200"
+              example:
+                data:
+                  - title: "Test Schema"
+                    description: "Just for testing"
+                    name: "test_schema-v2.0.0"
+                    url: "https://murmurations.network/schemas/test_schema"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /schemas/{schema_name}:
+    get:
+      tags:
+        - Common Endpoints
+      summary: Get a JSON Schema
+      description: |
+        A JSON Schema is returned so it can be used for validating input or building a form.
+      parameters:
+        - $ref: "#/components/parameters/schema_name"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSchemaName200"
+              example:
+                $id: "https://test-cdn.murmurations.network/schemas/test_schema-v2.0.0.json"
+                $schema: "https://json-schema.org/draft-07/schema#"
+                title: "Test Schema"
+                description: "Just for testing."
+                type: "object"
+                properties:
+                  linked_schemas:
+                    type: array
+                    items:
+                      type: string
+                  name:
+                    type: string
+                    title: "Name"
+                required:
+                  - linked_schemas
+                  - name
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+components:
+  schemas:
+    GetSchemas200:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              name:
+                type: string
+              url:
+                type: string
+            required:
+              - title
+              - description
+              - name
+              - url
+    GetSchemaName200:
+      type: object
+      required:
+        - $id
+        - $schema
+        - type
+        - properties
+      properties:
+        $id:
+          type: string
+        $schema:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        properties:
+          type: object
+          required:
+            - linked_schemas
+          properties:
+            linked_schemas:
+              type: array
+              items:
+                type: string
+        required:
+          type: array
+          items:
+            type: string
+    Error:
+      type: object
+      required:
+        - status
+        - title
+        - detail
+      properties:
+        status:
+          type: integer
+        title:
+          type: string
+        detail:
+          type: string
+  parameters:
+    schema_name:
+      name: schema_name
+      in: path
+      description: The schema name with its semver version number
+      required: true
+      schema:
+        type: string
+  responses:
+    Gone:
+      description: The target resource is no longer available.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 410
+            title: "Gone"
+            detail: "The v1 API has been deprecated. Please use the v2 API instead: https://app.swaggerhub.com/apis-docs/MurmurationsNetwork/IndexAPI/2.0.0"
+    TooManyRequests:
+      description: Too Many Requests
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 429
+            title: "Too Many Requests"
+            detail: "You have exceeded the maximum number of requests per minute/hour. Please try again later. For more information see: https://docs.murmurations.network/developers/rate-limits.html"
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            status: 500
+            title: "Internal Server Error"
+            detail: "An internal server error was triggered and has been logged. Please try your request again later."
