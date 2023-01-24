@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Murmurations Allocator API
+  description: The Allocator API queries the Map database and serves data to the Map front-end application
+servers:
+  - description: Murmurations Testing Platform
+    url: https://test-allocator.murmurations.network
+paths:
+  /:
+    get:
+      summary: Ping the Allocator
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "pong!"
+  /profile:
+    get:
+      summary: Get a single node
+      parameters:
+        - in: query
+          name: profile_url
+          description: pass node's profile_url string for looking up profile
+          required: true
+          schema:
+            type: string
+            example: "https://open.coop/open.json"
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ProfileItem'
+              examples:
+                Success Response:
+                  value: {
+                          "geolocation": {
+                            "lat": 51.5483,
+                            "lon": -0.1691
+                          },
+                          "last_updated": 1674302991,
+                          "linked_schemas": [
+                            "organizations_schema-v1.0.0"
+                          ],
+                          "locality": "London",
+                          "primary_url": "open.coop",
+                          "profile_url": "https://open.coop/open.json",
+                          "region": "London",
+                          "status": "posted",
+                          "tags": [
+                            "Co-op",
+                            "Commons",
+                            "P2P",
+                            "Collaboration",
+                            "Network"
+                          ]
+                        }
+                Empty Response:
+                  value: {}
+        '400':
+            description: Bad Request
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                example:
+                  {
+                    "error": "profile_url is missing"
+                  }
+  /profiles:
+      get:
+        summary: Get all nodes with filtered queries
+        parameters:
+          - in: query
+            name: schema
+            description: filter nodes with schema
+            required: false
+            schema:
+              type: string
+              example: "organizations_schema-v1.0.0"
+          - in: query
+            name: primary_url
+            description: filter nodes with primary_url
+            required: false
+            schema:
+              type: string
+              example: "open.coop"
+          - in: query
+            name: last_updated
+            description: filter nodes with last_updated
+            required: false
+            schema:
+              type: integer
+              example: 1673497440
+          - in: query
+            name: status
+            description: filter nodes with status
+            required: false
+            schema:
+              type: string
+              enum:
+                - posted
+                - deleted
+              example: "posted"
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CompressedProfileItem'
+                examples:
+                  Empty Response:
+                    value: {
+                            "data": []
+                          }
+                  Success Response:
+                    value: {
+                            "data": [
+                              [
+                                9.17604089,
+                                47.66378515,
+                                "https://test-data-proxy.murmurations.network/v1/profiles/cl6najzrq000k0k68z6psscox"
+                              ],
+                              [
+                                7.94536326,
+                                48.47049719,
+                                "https://test-data-proxy.murmurations.network/v1/profiles/cl6nak0ux001c0k68oi9meeu7"
+                              ]
+                            ]
+                          }
+components:
+  schemas:
+    ProfileItem:
+      type: object
+      properties:
+        country:
+          type: string
+        geolocation:
+          type: object
+          properties:
+            lat:
+              type: number
+            lon:
+              type: number
+        last_updated:
+          type: integer
+        linked_schemas:
+          type: array
+          items:
+            type: string
+        locality:
+          type: string
+        primary_url:
+          type: string
+        profile_url:
+          type: string
+        region:
+          type: string
+        status:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    CompressedProfileItem:
+      type: array
+      items:
+        # Upgrade to openAPI 3.1: https://stackoverflow.com/questions/38690802/how-to-define-a-mixed-type-array-with-different-element-types-in-openapi-2-0
+        anyOf:
+          - type: number
+          - type: number
+          - type: string
+      example: [9.17604089, 47.66378515, "https://test-data-proxy.murmurations.network/v1/profiles/cl6najzrq000k0k68z6psscox"]
