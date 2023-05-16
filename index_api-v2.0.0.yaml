@@ -408,7 +408,7 @@ paths:
         - Node Endpoints
       summary: Get a node's status from the Index
       description: |
-        A node can request an update about the status of the node profile after it has been submitted to the Index (i.e., when using `POST /nodes`).
+        A node can request an update about the status of the node profile after it has been submitted to the Index (i.e., when using `POST /nodes`). The `node_id` is simply the SHA-256 hash of the `profile_url` of the node that was originally submitted to the Index.
 
         The record of a node in the Index's database can be in one of six possible states: `received`, `validated`, `validation_failed`, `post_failed`, `posted` or `deleted`. The node will only be discoverable in the Index when it has the status of `posted` or `deleted`.
       parameters:
@@ -549,7 +549,7 @@ paths:
         - Node Endpoints
       summary: Delete a node from the Index
       description: |
-        A node can delete its profile from the Index at any time simply by removing the profile from its `profile_url` on its website and then sending a DELETE request to the Index.
+        A node can delete its profile from the Index at any time simply by removing the profile from its `profile_url` on its website and then sending a DELETE request to the Index. The `node_id` is just the SHA-256 hash of the `profile_url` of the node.
 
         The Index will first confirm the profile is no longer available at the `profile_url` (node's website should return a `404 - Not Found` error) and then mark the profile as deleted in its records.
       parameters:
