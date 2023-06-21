@@ -175,6 +175,12 @@ paths:
                       - status: 400
                         title: "Invalid Profile URL"
                         detail: "The `profile_url` is not a valid URL."
+                No_Redirects:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "No Redirects"
+                        detail: "The profile data must be located at the URL specified. Redirects are not supported by the index."
         429:
           $ref: "#/components/responses/TooManyRequests"
         500:
@@ -382,6 +388,12 @@ paths:
                           pointer: "/linked_schemas"
                         title: "Schema Not Found"
                         detail: "Could not locate the following schema in the library: test_schema-v0.0.1"
+                No_Redirects:
+                  value:
+                    errors:
+                      - status: 400
+                        title: "No Redirects"
+                        detail: "The profile data must be located at the URL specified. Redirects are not supported by the index."
         404:
           description: Not Found
           content:
