@@ -197,7 +197,8 @@ paths:
         - By city/town/village/etc, state/province/county/etc. and/or country (`locality`, `region`, `country`)
         - By node profile status (`posted` or `deleted`)
         - By `tags` that describe the node using an AND/OR filter (`tags_filter=and`/`tags_filter=or` default = `or`) with fuzzy or exact matching (`tags_exact=false`/`tags_exact=true` default = `false`)
-        - By the nodes website address (`primary_url`)
+        - By the node's website address (`primary_url`)
+        - By the name of the node (`name`)
         - Results can be paginated using the `page` (default = 1) and `page_size` (default = 30 results, maximum = 500) parameters
         
         The `links` object may contain the following pagination links: `first`, `prev`, `self`, `next` and `last`.
@@ -219,6 +220,7 @@ paths:
         - $ref: "#/components/parameters/tags_filter"
         - $ref: "#/components/parameters/tags_exact"
         - $ref: "#/components/parameters/primary_url"
+        - $ref: "#/components/parameters/name"
         - $ref: "#/components/parameters/page"
         - $ref: "#/components/parameters/page_size"
       responses:
@@ -235,6 +237,7 @@ paths:
                       - profile_url: "https://www.somenode.org/optional-subdirectory/node-profile.json"
                         last_updated: 1601979232403
                         primary_url: "somenode.org"
+                        name: Some Node
                         geolocation:
                           lat: 51.509865
                           lon: -0.118092
@@ -783,6 +786,8 @@ components:
             properties:
               profile_url:
                 type: string
+              name:
+                type: string
               last_updated:
                 type: integer
               linked_schemas:
@@ -1112,6 +1117,12 @@ components:
       name: primary_url
       in: query
       description: the canonical URL that identifies a node
+      schema:
+        type: string
+    name:
+      name: name
+      in: query
+      description: the name that identifies a node
       schema:
         type: string
     page:
